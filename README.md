@@ -7,6 +7,7 @@ Created by Ben Kaiser (Kaiser\_Design) in Claude Sonnet 4.5 as an artifact to as
 Use it here (github pages): https://kaiserdesign.github.io/owned-app/
 or here (Netlify): https://owned-product-app.netlify.app/
 or as Claude artifact: https://claude.ai/public/artifacts/15177b07-ceee-41bd-9dc2-f6d8509c3e61 
+also, this experiment with Opal (very different results): https://opal.google/app/1ksv9D2qkVd80ZypvnZRZWZX6UJHZXJcy
 
 ---- ---- ---- ----
 
