@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWNED — True Cost of Ownership</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0a;--surface:#131311;--border:#252522;--border2:#1e1e1b;
+  --accent:#c8973a;--adim:rgba(200,151,58,0.12);
+  --red:#b83232;--rdim:rgba(184,50,50,0.09);
+  --green:#4e9a6e;--blue:#4278a5;--purple:#7a5fa0;
+  --text:#ddd9cf;--text2:#a8a49c;--muted:#5c5a54;
+  --critbg:rgba(184,50,50,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+
+/* ── SETUP SCREEN ── */
+#setupScreen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;}
+#setupScreen.hidden{display:none;}
+.ks-box{background:var(--surface);border:1px solid var(--border);padding:2.2rem 2.5rem;max-width:560px;width:100%;}
+.ks-logo{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:0.06em;color:var(--accent);line-height:1;margin-bottom:0.15rem;}
+.ks-sub{font-size:0.61rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-bottom:1.8rem;line-height:1.9;}
+.ks-sub em{color:var(--accent);font-style:normal;}
+.ks-step{font-size:0.56rem;color:var(--text2);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:0.55rem;}
+.ks-modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.55rem;margin-bottom:1.5rem;}
+.ks-mode{border:1px solid var(--border);padding:0.85rem 0.9rem;cursor:pointer;transition:all 0.14s;display:flex;flex-direction:column;gap:0.2rem;}
+.ks-mode:hover{border-color:var(--accent);}
+.ks-mode.sel{border-color:var(--accent);background:var(--adim);}
+.ks-mode-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;color:var(--text);}
+.ks-mode-desc{font-size:0.56rem;color:var(--muted);line-height:1.5;}
+.ks-badge{font-size:0.48rem;letter-spacing:0.11em;text-transform:uppercase;padding:0.09rem 0.38rem;width:fit-content;margin-top:0.08rem;border:1px solid;}
+.b-free{border-color:rgba(78,154,110,0.4);color:#5aaa7e;background:rgba(78,154,110,0.08);}
+.b-paid{border-color:rgba(200,151,58,0.35);color:#c8973a;background:rgba(200,151,58,0.07);}
+.b-warn{border-color:rgba(184,50,50,0.35);color:#c86060;background:rgba(184,50,50,0.07);}
+
+/* key input panel */
+.ks-panel{display:none;}
+.ks-panel.vis{display:block;}
+.ks-field{display:flex;flex-direction:column;gap:0.28rem;margin-bottom:0.7rem;}
+.ks-lbl{font-size:0.52rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;}
+.ks-inp{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;padding:0.65rem 0.88rem;outline:none;width:100%;transition:border-color 0.15s;letter-spacing:0.03em;}
+.ks-inp:focus{border-color:var(--accent);}
+.ks-inp::placeholder{color:var(--muted);}
+.ks-hint{font-size:0.57rem;color:var(--muted);line-height:1.75;margin-top:0.35rem;}
+.ks-hint a{color:var(--accent);text-decoration:none;}
+.ks-hint a:hover{text-decoration:underline;}
+.ks-note{font-size:0.57rem;line-height:1.75;padding:0.65rem 0.85rem;border:1px solid var(--border);margin-bottom:0.9rem;}
+.ks-note.warn{border-color:rgba(184,50,50,0.3);background:var(--rdim);color:#c8a0a0;}
+.ks-note.info{border-color:rgba(200,151,58,0.25);background:var(--adim);color:#c8b080;}
+.ks-err{font-size:0.61rem;color:var(--red);min-height:1.1em;margin-bottom:0.4rem;}
+.ks-btn{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:0.11em;padding:0.68rem 2rem;border:none;cursor:pointer;background:var(--accent);color:#0c0c0a;transition:all 0.13s;width:100%;}
+.ks-btn:hover{background:#d9a840;}
+
+/* claude.ai paste mode */
+#promptModal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+#promptModal.vis{display:flex;}
+.pm-box{background:var(--surface);border:1px solid var(--border);padding:2rem 2.2rem;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;}
+.pm-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.5rem;}
+.pm-steps{font-size:0.66rem;color:var(--text2);line-height:2;margin-bottom:1rem;}
+.pm-steps strong{color:var(--text);}
+.pm-prompt{background:var(--bg);border:1px solid var(--border);padding:1rem;font-size:0.65rem;color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;margin-bottom:0.8rem;font-family:'DM Mono',monospace;}
+.pm-row{display:flex;gap:0.6rem;margin-bottom:1rem;}
+.pm-btn{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:0.55rem 1.4rem;border:none;cursor:pointer;transition:all 0.13s;}
+.pm-btn-copy{background:var(--accent);color:#0c0c0a;}
+.pm-btn-copy:hover{background:#d9a840;}
+.pm-btn-open{background:transparent;border:1px solid var(--border);color:var(--text2);}
+.pm-btn-open:hover{border-color:var(--accent);color:var(--accent);}
+.pm-paste-area{display:flex;flex-direction:column;gap:0.4rem;}
+.pm-paste-lbl{font-size:0.54rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;}
+.pm-paste{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:0.72rem;padding:0.65rem 0.85rem;outline:none;width:100%;height:100px;resize:vertical;transition:border-color 0.15s;}
+.pm-paste:focus{border-color:var(--accent);}
+.pm-paste::placeholder{color:var(--muted);}
+.pm-footer{display:flex;gap:0.6rem;margin-top:0.75rem;}
+.pm-submit{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:0.55rem 1.4rem;border:none;cursor:pointer;background:var(--accent);color:#0c0c0a;transition:all 0.13s;}
+.pm-submit:hover{background:#d9a840;}
+.pm-cancel{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:0.55rem 1rem;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.13s;}
+.pm-cancel:hover{border-color:var(--red);color:var(--red);}
+.pm-err{font-size:0.61rem;color:var(--red);margin-top:0.35rem;min-height:1em;}
+
+/* ── HEADER ── */
+header{padding:1.7rem 3rem 1.3rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;}
+.hdr-left{display:flex;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5rem);letter-spacing:0.06em;color:var(--accent);line-height:1;}
+.hdr-meta{display:flex;flex-direction:column;gap:0.16rem;padding-bottom:0.22rem;}
+.tagline{font-size:0.61rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;line-height:2.1;}
+.tagline em{color:var(--accent);font-style:normal;}
+.vtag{font-size:0.51rem;color:var(--muted);letter-spacing:0.11em;border:1px solid var(--border);padding:0.09rem 0.4rem;width:fit-content;}
+.hdr-key-btn{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.09em;color:var(--muted);border:1px solid var(--border);background:transparent;padding:0.28rem 0.75rem;cursor:pointer;transition:all 0.12s;white-space:nowrap;align-self:center;}
+.hdr-key-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ki{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:0.38rem;vertical-align:middle;}
+.ki.set{background:var(--green);}
+.ki.unset{background:var(--red);}
+
+/* ── INPUT ── */
+.input-section{padding:1.4rem 3rem;border-bottom:1px solid var(--border);}
+.main-row{display:flex;gap:0.65rem;margin-bottom:0.72rem;}
+.main-row input{flex:1;font-size:0.87rem;padding:0.76rem 0.92rem;}
+.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;margin-bottom:0.72rem;}
+.fg{display:flex;flex-direction:column;gap:0.26rem;}
+.flabel{font-size:0.51rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);}
+.flabel em{color:var(--accent);font-style:normal;}
+input[type=text],textarea{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:0.77rem;padding:0.58rem 0.82rem;outline:none;transition:border-color 0.15s;width:100%;letter-spacing:0.02em;resize:vertical;}
+input[type=text]:focus,textarea:focus{border-color:var(--accent);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+.btn-row{display:flex;gap:0.52rem;align-items:center;flex-wrap:wrap;}
+.btn{font-family:'Bebas Neue',sans-serif;font-size:1.08rem;letter-spacing:0.11em;padding:0.58rem 1.55rem;border:none;cursor:pointer;transition:all 0.13s;white-space:nowrap;}
+.btn-go{background:var(--accent);color:#0c0c0a;}
+.btn-go:hover{background:#d9a840;transform:translateY(-1px);}
+.btn-go:disabled{opacity:0.28;cursor:not-allowed;transform:none;}
+.btn-stop{background:var(--red);color:#fff;display:none;}
+.btn-stop:hover{background:#c83a3a;}
+.btn-stop.vis{display:inline-block;}
+.chips{display:flex;gap:0.3rem;flex-wrap:wrap;align-items:center;margin-top:0.58rem;}
+.chips-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-right:0.1rem;}
+.chip{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.62rem;padding:0.16rem 0.5rem;cursor:pointer;transition:all 0.12s;letter-spacing:0.04em;}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── LOADING ── */
+#loadingState{display:none;padding:5rem 3rem;text-align:center;}
+#loadingState.on{display:block;}
+.loader-word{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,3rem);color:var(--accent);letter-spacing:0.25em;animation:blink 1.3s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+.loader-sub{font-size:0.58rem;color:var(--muted);letter-spacing:0.13em;margin-top:0.4rem;text-transform:uppercase;}
+
+/* ── WELCOME ── */
+#welcomeState{padding:5rem 3rem;text-align:center;}
+.whl{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,3.5vw,2.4rem);font-style:italic;color:var(--text2);line-height:1.5;margin-bottom:1rem;}
+.wbody{font-size:0.67rem;color:var(--muted);max-width:500px;margin:0 auto;line-height:2.2;letter-spacing:0.04em;}
+
+/* ── RESULTS ── */
+#results{display:none;}
+#results.on{display:block;}
+.r-hdr{padding:1.5rem 3rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;}
+.r-name{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,4vw,2.7rem);font-style:italic;color:var(--text);line-height:1.1;margin-bottom:0.2rem;}
+.r-meta{font-size:0.56rem;color:var(--muted);letter-spacing:0.11em;text-transform:uppercase;line-height:1.9;}
+.r-verdict{font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-style:italic;color:var(--text2);max-width:400px;line-height:1.75;border-left:2px solid var(--accent);padding-left:0.88rem;}
+.export-bar{padding:0.58rem 3rem;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:0.48rem;align-items:center;flex-wrap:wrap;}
+.exp-lbl{font-size:0.51rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-right:0.1rem;}
+.exp-btn{background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:0.59rem;padding:0.24rem 0.65rem;cursor:pointer;letter-spacing:0.07em;transition:all 0.12s;}
+.exp-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cost-matrix{padding:1.55rem 3rem;border-bottom:1px solid var(--border);background:var(--surface);}
+.eyebrow{font-size:0.51rem;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.82rem;}
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:1px;background:var(--border);}
+.cc{background:var(--bg);padding:0.92rem 1rem;}
+.cc.hl{background:var(--adim);}
+.cc.danger{background:var(--rdim);}
+.cc-lbl{font-size:0.48rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-bottom:0.16rem;}
+.cc-val{font-family:'Bebas Neue',sans-serif;font-size:1.18rem;letter-spacing:0.05em;color:var(--accent);line-height:1;}
+.cc.danger .cc-val{color:var(--red);}
+.cc-sub{font-size:0.54rem;color:var(--muted);line-height:1.45;margin-top:0.12rem;}
+.oh-row{margin-top:0.95rem;display:flex;gap:0.36rem;flex-wrap:wrap;align-items:center;}
+.oh-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.11em;text-transform:uppercase;margin-right:0.1rem;}
+.oh-tag{font-size:0.56rem;padding:0.16rem 0.58rem;border:1px solid;}
+.oh-H{border-color:rgba(184,50,50,0.45);color:#c86060;background:rgba(184,50,50,0.08);}
+.oh-M{border-color:rgba(200,151,58,0.4);color:#c8973a;background:rgba(200,151,58,0.07);}
+.oh-L{border-color:rgba(78,154,110,0.35);color:#5aaa7e;background:rgba(78,154,110,0.07);}
+.own-rec{padding:1.35rem 3rem;border-bottom:1px solid var(--border);display:flex;gap:1.4rem;flex-wrap:wrap;align-items:flex-start;}
+.rec-word{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;letter-spacing:0.1em;line-height:1;}
+.rec-lbl{font-size:0.48rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-top:0.1rem;}
+.rec-opts{flex:1;display:flex;gap:0.4rem;flex-wrap:wrap;align-items:flex-start;}
+.rec-opt{padding:0.46rem 0.78rem;border:1px solid var(--border);min-width:88px;}
+.rec-opt.best{border-color:var(--accent);background:var(--adim);}
+.rec-opt-mode{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.08em;}
+.rec-opt-when{font-size:0.54rem;color:var(--text2);line-height:1.5;margin-top:0.09rem;}
+.rec-reason{flex:1 1 100%;font-size:0.69rem;color:var(--text2);line-height:1.85;border-top:1px solid var(--border);padding-top:0.78rem;margin-top:0.28rem;}
+.phases-section{border-bottom:1px solid var(--border);}
+.phases-eyebrow{padding:1.15rem 3rem 0;font-size:0.51rem;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;}
+.phases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);margin-top:0.72rem;}
+.phase-card{background:var(--bg);padding:1.35rem 1.55rem;position:relative;animation:fadeUp 0.3s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.phase-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;}
+.pc-pre::before{background:var(--blue);}
+.pc-acquire::before{background:var(--accent);}
+.pc-first::before{background:var(--green);}
+.pc-regular::before{background:var(--purple);}
+.pc-light::before{background:#8b7040;}
+.pc-heavy::before{background:var(--red);}
+.pc-special::before{background:#7a5fa0;}
+.pc-dispose::before{background:var(--muted);}
+.pc-aftermath::before{background:#7a3010;}
+.phase-num{font-size:0.48rem;color:var(--muted);letter-spacing:0.13em;margin-bottom:0.15rem;}
+.phase-title{font-family:'Bebas Neue',sans-serif;font-size:1.08rem;letter-spacing:0.1em;margin-bottom:0.78rem;line-height:1;}
+.pc-pre .phase-title{color:var(--blue);}
+.pc-acquire .phase-title{color:var(--accent);}
+.pc-first .phase-title{color:var(--green);}
+.pc-regular .phase-title{color:var(--purple);}
+.pc-light .phase-title{color:#a08040;}
+.pc-heavy .phase-title{color:var(--red);}
+.pc-special .phase-title{color:#9a7fc0;}
+.pc-dispose .phase-title{color:var(--muted);}
+.pc-aftermath .phase-title{color:#b05030;}
+.phase-items{list-style:none;}
+.pi{font-size:0.71rem;line-height:1.65;color:var(--text2);padding:0.33rem 0 0.33rem 1.18rem;border-bottom:1px solid var(--border2);position:relative;}
+.pi:last-child{border-bottom:none;}
+.pi::before{content:'--';position:absolute;left:0;color:var(--muted);font-size:0.57rem;top:0.48rem;}
+.pi.crit{color:#d09090;background:var(--critbg);border-bottom-color:rgba(184,50,50,0.08);padding-left:1.45rem;margin:0 -0.3rem;padding-right:0.3rem;}
+.pi.crit::before{content:'!';color:var(--red);font-weight:700;}
+.cbadge{display:inline-block;font-size:0.45rem;letter-spacing:0.11em;text-transform:uppercase;background:var(--red);color:#fff;padding:0.06rem 0.27rem;margin-left:0.35rem;vertical-align:middle;}
+.neg-section{padding:1.55rem 3rem;border-bottom:1px solid var(--border);background:#0f0808;}
+.neg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem 2.1rem;margin-top:0.82rem;}
+.neg-title{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.1em;color:var(--red);margin-bottom:0.58rem;}
+.neg-list{list-style:none;}
+.ni{font-size:0.69rem;color:#b09090;line-height:1.7;padding:0.25rem 0 0.25rem 1.05rem;position:relative;border-bottom:1px solid #1a0f0f;}
+.ni:last-child{border-bottom:none;}
+.ni::before{content:'x';position:absolute;left:0;color:#6a3030;font-size:0.55rem;top:0.38rem;}
+.ni.crit{color:#d08080;}
+.ni.crit::before{color:var(--red);}
+.arch-section{padding:1.55rem 3rem;border-bottom:1px solid var(--border);}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);margin-top:0.82rem;}
+.arch-card{background:var(--bg);padding:1.25rem;}
+.arch-title{font-family:'Bebas Neue',sans-serif;font-size:0.88rem;letter-spacing:0.11em;color:var(--text2);margin-bottom:0.6rem;}
+.arch-body{font-size:0.68rem;color:var(--text2);line-height:1.85;}
+.evo-chain{display:flex;flex-direction:column;gap:0.38rem;margin-top:0.6rem;}
+.evo-row{display:flex;gap:0.5rem;align-items:flex-start;}
+.evo-dot{width:6px;height:6px;border-radius:50%;margin-top:0.34rem;flex-shrink:0;}
+.evo-dot.past{background:var(--muted);}
+.evo-dot.present{background:var(--accent);}
+.evo-dot.future{background:var(--green);}
+.evo-inner{font-size:0.65rem;color:var(--text2);line-height:1.55;}
+.evo-era{font-size:0.48rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+.qtiers{display:flex;flex-direction:column;gap:0.34rem;margin-top:0.46rem;}
+.qtier{display:flex;gap:0.6rem;align-items:center;}
+.qt-name{font-size:0.55rem;color:var(--text2);letter-spacing:0.04em;min-width:42px;}
+.qt-bar{height:3px;background:var(--border);flex:0 0 62px;position:relative;}
+.qt-fill{position:absolute;left:0;top:0;height:100%;}
+.qt-note{font-size:0.55rem;color:var(--muted);}
+.alt-section{padding:1.55rem 3rem;}
+.alt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:1px;background:var(--border);margin-top:0.82rem;}
+.alt-card{background:var(--bg);padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:0.5rem;animation:fadeUp 0.3s ease both;}
+.alt-rank{font-size:0.48rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;}
+.alt-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.2;}
+.alt-why{font-size:0.67rem;color:var(--text2);line-height:1.72;}
+.alt-trade{font-size:0.61rem;color:var(--muted);line-height:1.6;}
+.alt-tags{display:flex;gap:0.28rem;flex-wrap:wrap;}
+.alt-tag{font-size:0.53rem;padding:0.12rem 0.44rem;border:1px solid rgba(78,154,110,0.35);color:#5aaa7e;background:rgba(78,154,110,0.06);letter-spacing:0.05em;}
+.alt-btn{margin-top:auto;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:0.59rem;padding:0.32rem 0.65rem;cursor:pointer;letter-spacing:0.07em;transition:all 0.12s;text-align:left;width:fit-content;}
+.alt-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(max-width:760px){
+  header,.input-section,.r-hdr,.export-bar,.cost-matrix,.own-rec,.phases-eyebrow,.neg-section,.arch-section,.alt-section{padding-left:1rem;padding-right:1rem;}
+  .sub-grid,.neg-grid,.arch-grid,.ks-modes{grid-template-columns:1fr;}
+}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* ── SCOPE ── */
+.scope-section{padding:1.6rem 3rem;border-bottom:1px solid var(--border);background:var(--surface);}
+.scope-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);margin-top:0.85rem;}
+.scope-card{background:var(--bg);padding:1.4rem 1.5rem;}
+.scope-lens{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:0.12em;margin-bottom:0.3rem;}
+.scope-zoom{font-size:0.5rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:0.65rem;}
+.scope-body{font-size:0.7rem;color:var(--text2);line-height:1.8;}
+.scope-fit{margin-top:0.8rem;display:flex;align-items:center;gap:0.55rem;}
+.scope-fit-bar{flex:0 0 50px;height:3px;background:var(--border);position:relative;}
+.scope-fit-fill{position:absolute;left:0;top:0;height:100%;}
+.scope-fit-label{font-size:0.58rem;letter-spacing:0.08em;}
+.fit-high{color:var(--green);}
+.fit-mid{color:var(--accent);}
+.fit-low{color:var(--red);}
+
+/* ── SOLUTIONS ── */
+.solutions-section{padding:1.6rem 3rem;border-bottom:1px solid var(--border);background:#080f08;}
+.sol-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem 2rem;margin-top:0.85rem;}
+.sol-group{}
+.sol-group-title{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.1em;color:var(--green);margin-bottom:0.55rem;}
+.sol-list{list-style:none;}
+.sol-item{display:flex;gap:0.6rem;align-items:flex-start;font-size:0.7rem;color:#90b090;line-height:1.65;padding:0.28rem 0;border-bottom:1px solid #0d1a0d;}
+.sol-item:last-child{border-bottom:none;}
+.sol-action{flex:1;}
+.sol-effort{font-size:0.52rem;padding:0.1rem 0.4rem;border:1px solid;flex-shrink:0;margin-top:0.18rem;}
+.sol-eff-L{border-color:rgba(78,154,110,0.35);color:#5aaa7e;}
+.sol-eff-M{border-color:rgba(200,151,58,0.35);color:#c8973a;}
+.sol-eff-H{border-color:rgba(184,50,50,0.35);color:#c86060;}
+.sol-impact{font-size:0.56rem;color:var(--muted);margin-top:0.1rem;}
+
+/* ── PRINT / PDF ── */
+@media print{
+  #keyScreen,#setupScreen,#promptModal,.hdr-key-btn,.btn-row,.chips,.export-bar{display:none!important;}
+  body{background:#fff;color:#111;font-size:11px;}
+  :root{--bg:#fff;--surface:#f5f5f5;--border:#ddd;--border2:#e5e5e5;--text:#111;--text2:#444;--muted:#777;--accent:#8a6020;--red:#a02020;--green:#2a6a40;}
+  .logo,.ks-logo{color:#8a6020;}
+  header{border-bottom:2px solid #ccc;}
+  .phase-card,.neg-section,.scope-card,.sol-item,.alt-card,.arch-card,.cc{break-inside:avoid;}
+  .phases-grid,.scope-grid,.arch-grid,.alt-grid,.cost-grid{grid-template-columns:1fr 1fr;}
+  .neg-grid,.sol-grid{grid-template-columns:1fr 1fr;}
+  .loader-word,.btn-stop{display:none!important;}
+  a{color:inherit;text-decoration:none;}
+  @page{margin:1.5cm;}
+}
+
+@media(max-width:760px){
+  .scope-grid,.sol-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SETUP SCREEN ── -->
+<div id="setupScreen">
+  <div class="ks-box">
+    <div class="ks-logo">OWNED</div>
+    <div class="ks-sub">True Cost of Ownership Engine &mdash; <em>Your key stays in your browser only.</em></div>
+
+    <div class="ks-step">1. Choose how you want to run this</div>
+    <div class="ks-modes">
+      <div class="ks-mode sel" data-mode="anthropic">
+        <div class="ks-mode-name">Anthropic API</div>
+        <div class="ks-mode-desc">Best results. Requires a paid API key.</div>
+        <div class="ks-badge b-paid">~$0.01&ndash;0.05 / analysis</div>
+      </div>
+      <div class="ks-mode" data-mode="claude">
+        <div class="ks-mode-name">Claude.ai</div>
+        <div class="ks-mode-desc">Free. Use your existing Claude account &mdash; copy &amp; paste workflow.</div>
+        <div class="ks-badge b-free">Free &mdash; no API key needed</div>
+      </div>
+      <div class="ks-mode" data-mode="gemini">
+        <div class="ks-mode-name">Google Gemini</div>
+        <div class="ks-mode-desc">Different AI — results may vary. Free tier has strict daily limits and regional restrictions.</div>
+        <div class="ks-badge b-warn">Limited free tier</div>
+      </div>
+    </div>
+
+    <!-- Anthropic key panel -->
+    <div class="ks-panel vis" id="panel-anthropic">
+      <div class="ks-note warn" id="corsWarning" style="display:none">
+        <strong>⚠ Running from a local file.</strong> Browsers block direct API calls from <code>file://</code> URLs due to CORS security rules — your key will be saved but calls will fail. Two options: <strong>(a)</strong> Switch to Claude.ai mode (free, works anywhere). <strong>(b)</strong> Host this file on any web server (Netlify, GitHub Pages, even a local server) and API keys work fine.
+      </div>
+      <div class="ks-step">2. Paste your Anthropic API key</div>
+      <div class="ks-field">
+        <label class="ks-lbl">API Key</label>
+        <input class="ks-inp" type="password" id="anthropicKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+        <div class="ks-hint">
+          Get your key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>.
+          Set a spend limit under Billing to cap costs. Key is saved locally in your browser only.
+        </div>
+      </div>
+    </div>
+
+    <!-- Claude.ai panel -->
+    <div class="ks-panel" id="panel-claude">
+      <div class="ks-note info">
+        <strong style="color:var(--accent)">How it works:</strong> When you click Analyze, this app generates a prompt. You copy it, paste it into
+        <a href="https://claude.ai" target="_blank" style="color:var(--accent)">claude.ai</a>, copy Claude's response back here, and the app renders the full analysis. No API key required &mdash; just your free or Pro Claude account.
+      </div>
+    </div>
+
+    <!-- Gemini key panel -->
+    <div class="ks-panel" id="panel-gemini">
+      <div class="ks-note warn">
+        <strong>Note:</strong> This app was built and optimized for Claude. Gemini will attempt the same analysis but may produce incomplete or differently structured results. For best output, use Anthropic API or Claude.ai mode.
+      </div>
+      <div class="ks-note warn" id="corsWarningGemini" style="display:none">
+        <strong>⚠ Running from a local file.</strong> Browsers block direct API calls from <code>file://</code> URLs — Gemini calls will fail. Use Claude.ai mode instead, or host this file on any web server.
+      </div>
+      <div class="ks-step">2. Paste your Google Gemini API key</div>
+      <div class="ks-field">
+        <label class="ks-lbl">Gemini API Key</label>
+        <input class="ks-inp" type="password" id="geminiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
+        <div class="ks-hint">
+          Get a key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.
+          Free tier has daily limits (~250 req/day) and is unavailable in EU/UK/CH. If you hit a 429 error, you've exceeded your daily quota — try again tomorrow or use Anthropic/Claude.ai mode instead.
+        </div>
+      </div>
+    </div>
+
+    <div class="ks-err" id="ksErr"></div>
+    <button class="ks-btn" id="ksSaveBtn">SAVE &amp; START</button>
+    <div style="text-align:center;margin-top:0.9rem;">
+      <span style="font-size:0.56rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;" id="ksSkip">Use Claude.ai mode (free, no key needed)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLAUDE.AI PASTE MODAL ── -->
+<div id="promptModal">
+  <div class="pm-box">
+    <div class="pm-title">CLAUDE.AI MODE</div>
+    <div class="pm-steps">
+      <strong>Step 1:</strong> Copy the prompt below.<br>
+      <strong>Step 2:</strong> Click "Open Claude.ai" &mdash; paste it in and send.<br>
+      <strong>Step 3:</strong> Copy Claude's full response (the JSON block).<br>
+      <strong>Step 4:</strong> Paste it below and click "RENDER RESULTS".
+    </div>
+    <div class="pm-prompt" id="pmPromptText"></div>
+    <div class="pm-row">
+      <button class="pm-btn pm-btn-copy" id="pmCopyPrompt">COPY PROMPT</button>
+      <button class="pm-btn pm-btn-open" id="pmOpenClaude">OPEN CLAUDE.AI</button>
+    </div>
+    <div class="pm-paste-area">
+      <label class="pm-paste-lbl">Paste Claude's response here</label>
+      <textarea class="pm-paste" id="pmPasteArea" placeholder="Paste the full JSON response from Claude here..."></textarea>
+      <div class="pm-err" id="pmErr"></div>
+    </div>
+    <div class="pm-footer">
+      <button class="pm-submit" id="pmSubmit">RENDER RESULTS</button>
+      <button class="pm-cancel" id="pmCancel">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<header>
+  <div class="hdr-left">
+    <div class="logo">OWNED</div>
+    <div class="hdr-meta">
+      <div class="tagline">Price is what you pay. <em>Cost</em> is what you carry.<br>Full lifecycle intelligence &mdash; any item, any context.</div>
+      <div class="vtag">V3 &middot; LIFECYCLE ANALYSIS ENGINE</div>
+    </div>
+  </div>
+  <button class="hdr-key-btn" id="changeKeyBtn">
+    <span class="ki unset" id="keyDot"></span><span id="keyBtnLabel">SETUP</span>
+  </button>
+</header>
+
+<div class="input-section">
+  <div class="main-row">
+    <input type="text" id="itemInput" placeholder="Item, tool, vehicle, appliance, software, license, animal..." autocomplete="off">
+  </div>
+  <div class="sub-grid">
+    <div class="fg">
+      <label class="flabel">Specific Model / Product <em>(optional)</em></label>
+      <input type="text" id="modelInput" placeholder="e.g. WalkingPad R2 Pro, Breville Barista Express...">
+    </div>
+    <div class="fg">
+      <label class="flabel">Your Use Case &amp; Context <em>(optional)</em></label>
+      <textarea id="ctxInput" rows="2" placeholder="e.g. WFH under-desk daily, apartment, hard water, first-time owner..."></textarea>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-go" id="analyzeBtn">ANALYZE</button>
+    <button class="btn btn-stop" id="stopBtn">&#9632; STOP</button>
+  </div>
+  <div class="chips">
+    <span class="chips-lbl">Try:</span>
+    <button class="chip" data-item="Walking Pad" data-model="WalkingPad R2 Pro" data-ctx="WFH under-desk, daily use, apartment">Walking Pad</button>
+    <button class="chip" data-item="Motorcycle" data-model="" data-ctx="Weekend riding, stored in garage winters">Motorcycle</button>
+    <button class="chip" data-item="Espresso Machine" data-model="Breville Barista Express" data-ctx="Daily home use, hard water area">Espresso Machine</button>
+    <button class="chip" data-item="Dog" data-model="Labrador Retriever" data-ctx="First-time owner, apartment">Dog</button>
+    <button class="chip" data-item="Chainsaw" data-model="Stihl MS 271" data-ctx="Seasonal yard work, long winter storage">Chainsaw</button>
+    <button class="chip" data-item="Rental Property" data-model="Single family home" data-ctx="Self-managed, long-term tenant, suburban">Rental Property</button>
+    <button class="chip" data-item="Firearm" data-model="Glock 19" data-ctx="Home defense, occasional range, no prior experience">Firearm</button>
+    <button class="chip" data-item="Standing Desk" data-model="Flexispot E7" data-ctx="WFH full-time, back problems, small home office">Standing Desk</button>
+  </div>
+</div>
+
+<div id="loadingState">
+  <div class="loader-word">MAPPING</div>
+  <div class="loader-sub">Tracing lifecycle &mdash; costs, risks, alternatives, archaeology</div>
+</div>
+<div id="results"></div>
+<div id="welcomeState">
+  <div class="whl">"The price tag is the opening bid.<br>The lifecycle is the real negotiation."</div>
+  <div class="wbody" id="welcomeBody">Choose a mode above, then enter any item.<br>Add a specific model and context for precision.<br><br>Cost matrix &middot; overhead &middot; ownership mode &middot; archaeology &middot; alternatives &middot; export</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ── STORAGE
+var SK_MODE = 'owned_mode';
+var SK_KEY  = 'owned_key';
+
+function storeSave(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function storeGet(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
+
+// ── STATE
+var currentData = null;
+var cancelled   = false;
+var activeMode  = 'anthropic'; // 'anthropic' | 'claude' | 'gemini'
+var pendingAnalysisArgs = null;
+var isFileProtocol = (window.location.protocol === 'file:');
+// Detect if running as claude.ai artifact (in iframe) — in that case API calls work natively
+var isArtifact = (window.self !== window.top);
+
+// ── DOM refs
+var setupScreen  = document.getElementById('setupScreen');
+var ksErr        = document.getElementById('ksErr');
+var ksSaveBtn    = document.getElementById('ksSaveBtn');
+var ksSkip       = document.getElementById('ksSkip');
+var keyDot       = document.getElementById('keyDot');
+var keyBtnLabel  = document.getElementById('keyBtnLabel');
+var changeKeyBtn = document.getElementById('changeKeyBtn');
+var itemInput    = document.getElementById('itemInput');
+var modelInput   = document.getElementById('modelInput');
+var ctxInput     = document.getElementById('ctxInput');
+var analyzeBtn   = document.getElementById('analyzeBtn');
+var stopBtn      = document.getElementById('stopBtn');
+var loadingEl    = document.getElementById('loadingState');
+var resultsEl    = document.getElementById('results');
+var welcomeEl    = document.getElementById('welcomeState');
+var welcomeBody  = document.getElementById('welcomeBody');
+var promptModal  = document.getElementById('promptModal');
+var pmPromptText = document.getElementById('pmPromptText');
+var pmCopyPrompt = document.getElementById('pmCopyPrompt');
+var pmOpenClaude = document.getElementById('pmOpenClaude');
+var pmPasteArea  = document.getElementById('pmPasteArea');
+var pmErr        = document.getElementById('pmErr');
+var pmSubmit     = document.getElementById('pmSubmit');
+var pmCancel     = document.getElementById('pmCancel');
+var corsWarn     = document.getElementById('corsWarning');
+var corsWarnG    = document.getElementById('corsWarningGemini');
+
+// ── CONSTANTS
+var MODE_COLORS = {buy:'#c8973a',rent:'#4278a5',lease:'#7a5fa0',borrow:'#4e9a6e',subscribe:'#6a8a3a',avoid:'#b83232'};
+var OH_LABELS   = {physical:'Physical',temporal:'Temporal',mental:'Mental',health:'Health Risk',privacy:'Privacy',social:'Social'};
+var PHASES = [
+  {key:'pre',       label:'PRE-ACQUISITION',        num:'00',cls:'pc-pre'},
+  {key:'acquire',   label:'ACQUISITION',             num:'01',cls:'pc-acquire'},
+  {key:'first',     label:'FIRST USE / SETUP',       num:'02',cls:'pc-first'},
+  {key:'regular',   label:'REGULAR MAINTENANCE',     num:'03',cls:'pc-regular'},
+  {key:'light',     label:'UNDERUSE / DORMANCY',     num:'04',cls:'pc-light'},
+  {key:'heavy',     label:'HEAVY / AGGRESSIVE USE',  num:'05',cls:'pc-heavy'},
+  {key:'special',   label:'SPECIAL CONDITIONS',      num:'06',cls:'pc-special'},
+  {key:'dispose',   label:'DISPOSAL / EXIT',         num:'07',cls:'pc-dispose'},
+  {key:'aftermath', label:'AFTERMATH',               num:'08',cls:'pc-aftermath'}
+];
+
+// ── SETUP SCREEN: mode switching
+document.querySelectorAll('.ks-mode').forEach(function(el){
+  el.addEventListener('click', function(){
+    document.querySelectorAll('.ks-mode').forEach(function(m){ m.classList.remove('sel'); });
+    el.classList.add('sel');
+    activeMode = el.dataset.mode;
+    document.querySelectorAll('.ks-panel').forEach(function(p){ p.classList.remove('vis'); });
+    var panel = document.getElementById('panel-' + activeMode);
+    if(panel) panel.classList.add('vis');
+    ksErr.textContent = '';
+    updateCorsWarnings();
+  });
+});
+
+function updateCorsWarnings(){
+  if(corsWarn)  corsWarn.style.display  = (isFileProtocol && activeMode === 'anthropic') ? 'block' : 'none';
+  if(corsWarnG) corsWarnG.style.display = (isFileProtocol && activeMode === 'gemini')    ? 'block' : 'none';
+}
+
+// ── SAVE & START
+ksSaveBtn.addEventListener('click', function(){
+  ksErr.textContent = '';
+  if(activeMode === 'anthropic'){
+    var key = document.getElementById('anthropicKeyInput').value.trim();
+    if(!key){ ksErr.textContent = 'Please paste your Anthropic API key.'; return; }
+    if(key.indexOf('sk-ant') !== 0 && key.indexOf('sk-') !== 0){
+      ksErr.textContent = 'Anthropic keys start with sk-ant-... — check and try again.';
+      return;
+    }
+    storeSave(SK_KEY, key);
+  } else if(activeMode === 'gemini'){
+    var gkey = document.getElementById('geminiKeyInput').value.trim();
+    if(!gkey){ ksErr.textContent = 'Please paste your Gemini API key.'; return; }
+    if(gkey.indexOf('AIza') !== 0){
+      ksErr.textContent = 'Gemini keys start with AIza... — check and try again.';
+      return;
+    }
+    storeSave(SK_KEY, gkey);
+  } else {
+    // claude.ai mode — no key needed
+    storeSave(SK_KEY, '');
+  }
+  storeSave(SK_MODE, activeMode);
+  hideSetup();
+});
+
+// ── SKIP: allowed, but no key stored — claude.ai mode fallback used on analyze
+ksSkip.addEventListener('click', function(){
+  // Save claude mode so they can analyze via paste
+  storeSave(SK_MODE, 'claude');
+  storeSave(SK_KEY, '');
+  activeMode = 'claude';
+  hideSetup();
+});
+
+changeKeyBtn.addEventListener('click', showSetup);
+
+function hideSetup(){
+  setupScreen.classList.add('hidden');
+  updateKeyIndicator();
+  updateWelcomeBody();
+}
+
+function updateWelcomeBody(){
+  if(!welcomeBody) return;
+  var mode = storeGet(SK_MODE) || activeMode;
+  if(mode === 'claude'){
+    welcomeBody.innerHTML = 'You\'re in <strong style="color:var(--accent)">Claude.ai mode</strong>.<br>Enter an item below and click Analyze — you\'ll get a prompt to paste into claude.ai, then paste the response back here to render the full analysis.<br><br>Cost matrix &middot; overhead &middot; ownership mode &middot; archaeology &middot; alternatives &middot; export';
+  } else if(mode === 'gemini'){
+    welcomeBody.innerHTML = 'Running on <strong style="color:var(--accent)">Google Gemini</strong>. Note: this app was built for Claude — results may differ from intended.<br>Enter any item below and click Analyze.<br><br>Cost matrix &middot; overhead &middot; ownership mode &middot; archaeology &middot; alternatives';
+  } else {
+    welcomeBody.innerHTML = 'Running on <strong style="color:var(--accent)">Anthropic Claude API</strong>.<br>Enter any item below. Add a model and context for precision.<br><br>Cost matrix &middot; overhead &middot; ownership mode &middot; archaeology &middot; alternatives &middot; export';
+  }
+}
+function showSetup(){
+  var savedMode = storeGet(SK_MODE) || 'anthropic';
+  activeMode = savedMode;
+  document.querySelectorAll('.ks-mode').forEach(function(el){
+    el.classList.toggle('sel', el.dataset.mode === savedMode);
+  });
+  document.querySelectorAll('.ks-panel').forEach(function(p){ p.classList.remove('vis'); });
+  var panel = document.getElementById('panel-' + savedMode);
+  if(panel) panel.classList.add('vis');
+  document.getElementById('anthropicKeyInput').value = '';
+  document.getElementById('geminiKeyInput').value = '';
+  ksErr.textContent = '';
+  updateCorsWarnings();
+  setupScreen.classList.remove('hidden');
+}
+function updateKeyIndicator(){
+  var mode = storeGet(SK_MODE) || activeMode;
+  var key  = storeGet(SK_KEY);
+  if(mode === 'claude'){
+    keyDot.className = 'ki set';
+    keyBtnLabel.textContent = 'CLAUDE.AI MODE';
+  } else if(key){
+    keyDot.className = 'ki set';
+    keyBtnLabel.textContent = mode === 'gemini' ? 'GEMINI KEY SET' : 'ANTHROPIC KEY SET';
+  } else {
+    keyDot.className = 'ki unset';
+    keyBtnLabel.textContent = 'SETUP';
+  }
+}
+
+// ── INIT
+(function init(){
+  // If running as artifact inside claude.ai — API calls work without a key via the environment
+  // Skip setup entirely, default to anthropic mode
+  if(isArtifact){
+    activeMode = 'anthropic';
+    storeSave(SK_MODE, 'anthropic');
+    hideSetup();
+    updateKeyIndicator();
+    updateWelcomeBody();
+    return;
+  }
+
+  var savedMode = storeGet(SK_MODE);
+  if(savedMode){
+    activeMode = savedMode;
+    hideSetup();
+  } else {
+    updateCorsWarnings();
+  }
+  updateKeyIndicator();
+  updateWelcomeBody();
+  try{
+    var p=new URLSearchParams(window.location.search);
+    var q=p.get('q'),m=p.get('m'),c=p.get('c');
+    if(q && savedMode){
+      itemInput.value=q;
+      if(m) modelInput.value=m;
+      if(c) ctxInput.value=c;
+      analyze();
+    }
+  }catch(e){}
+})();
+
+// ── MAIN EVENTS
+analyzeBtn.addEventListener('click', analyze);
+stopBtn.addEventListener('click', function(){ cancelled=true; setLoading(false); });
+itemInput.addEventListener('keydown', function(e){ if(e.key==='Enter') analyze(); });
+document.querySelectorAll('.chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    itemInput.value=chip.dataset.item||'';
+    modelInput.value=chip.dataset.model||'';
+    ctxInput.value=chip.dataset.ctx||'';
+    analyze();
+  });
+});
+
+// ── ANALYZE DISPATCHER
+function analyze(){
+  var item = itemInput.value.trim();
+  if(!item) return;
+
+  var mode = storeGet(SK_MODE) || activeMode;
+
+  // In artifact/iframe mode — API works without a stored key
+  if(isArtifact){
+    cancelled=false; currentData=null;
+    welcomeEl.style.display='none';
+    resultsEl.classList.remove('on');
+    setLoading(true);
+    callAnthropic('', buildPrompt(item, modelInput.value.trim(), ctxInput.value.trim()), item, modelInput.value.trim(), ctxInput.value.trim());
+    return;
+  }
+
+  if(!mode){ showSetup(); return; }
+
+  cancelled=false; currentData=null;
+  welcomeEl.style.display='none';
+  resultsEl.classList.remove('on');
+
+  if(mode === 'claude'){
+    openPasteModal(buildPrompt(item, modelInput.value.trim(), ctxInput.value.trim()), item, modelInput.value.trim(), ctxInput.value.trim());
+    return;
+  }
+
+  var key = storeGet(SK_KEY);
+  if(!key){ showSetup(); return; }
+
+  setLoading(true);
+  var prompt = buildPrompt(item, modelInput.value.trim(), ctxInput.value.trim());
+  if(mode === 'gemini'){
+    callGemini(key, prompt, item, modelInput.value.trim(), ctxInput.value.trim());
+  } else {
+    callAnthropic(key, prompt, item, modelInput.value.trim(), ctxInput.value.trim());
+  }
+}
+
+// ── ANTHROPIC CALL
+function callAnthropic(key, prompt, item, model, ctx){
+  var hdrs={'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  if(key) hdrs['x-api-key']=key;
+  fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers: hdrs,
+    body: JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens:8000,
+      system:'You are a ruthlessly precise ownership analyst. Output ONLY valid compact JSON — no markdown, no preamble. critical:true only for commonly missed + serious consequence items.',
+      messages:[{role:'user',content:prompt}]
+    })
+  })
+  .then(function(resp){
+    if(cancelled) return null;
+    if(!resp.ok){
+      return resp.json().catch(function(){return{};}).then(function(e){
+        throw new Error('Anthropic ' + resp.status + ': ' + ((e&&e.error&&e.error.message)||resp.statusText));
+      });
+    }
+    return resp.json();
+  })
+  .then(function(data){
+    if(cancelled||!data) return;
+    var text=(data.content||[]).map(function(b){return b.text||'';}).join('');
+    handleResponse(text, item, model, ctx);
+  })
+  .catch(function(err){
+    if(cancelled) return;
+    var msg = err.message||String(err);
+    if(msg.indexOf('401')!==-1||msg.indexOf('403')!==-1){
+      ksErr.textContent='Key rejected: '+msg;
+      showSetup();
+    } else if(msg.toLowerCase().indexOf('failed to fetch')!==-1||msg.toLowerCase().indexOf('cors')!==-1){
+      showError('Network blocked. If running from a local file, use Claude.ai mode instead (no API key needed). Hosted on a web server works fine with an API key.');
+    } else {
+      showError(msg);
+    }
+  })
+  .finally(function(){ setLoading(false); });
+}
+
+// ── GEMINI CALL
+function callGemini(key, prompt, item, model, ctx){
+  var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key;
+  fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:'You are a precise ownership analyst. Output ONLY valid JSON — no markdown, no preamble.\n\n'+prompt}]}],
+      generationConfig:{maxOutputTokens:8000,temperature:0.1}
+    })
+  })
+  .then(function(resp){
+    if(cancelled) return null;
+    if(!resp.ok){
+      return resp.json().catch(function(){return{};}).then(function(e){
+        throw new Error('Gemini '+resp.status+': '+((e&&e.error&&e.error.message)||resp.statusText));
+      });
+    }
+    return resp.json();
+  })
+  .then(function(data){
+    if(cancelled||!data) return;
+    var text='';
+    try{text=data.candidates[0].content.parts[0].text||'';}catch(e){}
+    handleResponse(text, item, model, ctx);
+  })
+  .catch(function(err){
+    if(cancelled) return;
+    var msg=err.message||String(err);
+    if(msg.indexOf('429')!==-1||msg.toLowerCase().indexOf('quota')!==-1){
+      showError('Gemini daily quota exceeded. The free tier allows ~250 requests/day and resets at midnight Pacific time. Switch to Claude.ai mode (free, works immediately) or try again tomorrow.');
+    } else if(msg.indexOf('404')!==-1){
+      showError('Gemini model not found. The free tier model may have changed — try Claude.ai mode instead.');
+    } else if(msg.toLowerCase().indexOf('failed to fetch')!==-1||msg.toLowerCase().indexOf('cors')!==-1){
+      showError('Network blocked. If running from a local file, use Claude.ai mode instead — it works everywhere without a key.');
+    } else {
+      showError('Gemini error: ' + msg);
+    }
+  })
+  .finally(function(){ setLoading(false); });
+}
+
+// ── CLAUDE.AI PASTE MODAL
+function openPasteModal(prompt, item, model, ctx){
+  pendingAnalysisArgs = {item:item, model:model, ctx:ctx};
+  pmPromptText.textContent = prompt;
+  pmPasteArea.value = '';
+  pmErr.textContent = '';
+  promptModal.classList.add('vis');
+}
+
+pmCopyPrompt.addEventListener('click', function(){
+  navigator.clipboard.writeText(pmPromptText.textContent).then(function(){
+    var o=pmCopyPrompt.textContent; pmCopyPrompt.textContent='COPIED!';
+    setTimeout(function(){pmCopyPrompt.textContent=o;},1800);
+  });
+});
+
+pmOpenClaude.addEventListener('click', function(){
+  window.open('https://claude.ai','_blank');
+});
+
+pmSubmit.addEventListener('click', function(){
+  var raw = pmPasteArea.value.trim();
+  if(!raw){ pmErr.textContent='Please paste Claude\'s response first.'; return; }
+  var parsed = parseJSON(raw);
+  if(!parsed){ pmErr.textContent='Could not read JSON. Make sure you copied the full response. Preview: '+raw.slice(0,120); return; }
+  promptModal.classList.remove('vis');
+  currentData = parsed;
+  var args = pendingAnalysisArgs || {};
+  renderResults(args.item||'', args.model||'', args.ctx||'', parsed);
+});
+
+pmCancel.addEventListener('click', function(){
+  promptModal.classList.remove('vis');
+  pendingAnalysisArgs = null;
+});
+
+// ── SHARED RESPONSE HANDLER
+function handleResponse(text, item, model, ctx){
+  var parsed = parseJSON(text);
+  if(!parsed){ showError('Could not parse response. Preview: '+text.slice(0,300)); return; }
+  currentData = parsed;
+  renderResults(item, model, ctx, parsed);
+}
+
+function setLoading(on){
+  loadingEl.classList.toggle('on', on);
+  analyzeBtn.disabled = on;
+  stopBtn.classList.toggle('vis', on);
+}
+
+function parseJSON(text){
+  if(!text) return null;
+  try{
+    // Strip all flavors of markdown code fences (```json, ```JSON, ```, ~~~)
+    var clean = text
+      .replace(/^[\s\S]*?```(?:json|JSON)?\s*/,'')  // strip everything up to and including opening fence
+      .replace(/```[\s\S]*$/,'')                      // strip closing fence and anything after
+      .replace(/~~~[\s\S]*$/,'')
+      .trim();
+    // If no fence was found, work with original text
+    if(clean.length < 10) clean = text.trim();
+    // Extract outermost { ... }
+    var s = clean.indexOf('{');
+    var e = clean.lastIndexOf('}');
+    if(s !== -1 && e > s) clean = clean.slice(s, e+1);
+    return JSON.parse(clean);
+  }catch(err){
+    // Last resort: try parsing the raw text directly
+    try{ return JSON.parse(text.trim()); }catch(e2){ return null; }
+  }
+}
+
+// ── PROMPT BUILDER
+function buildPrompt(item, model, ctx){
+  var L=[];
+  L.push('True ownership analysis. Item: "'+item+'"');
+  if(model) L.push('Specific model/product: "'+model+'"');
+  if(ctx)   L.push('Context: "'+ctx+'"');
+  L.push('');
+  L.push('Output ONLY a single valid JSON object. No markdown. No code fences. No explanation. Start your response with { and end with }.');
+  L.push('');
+  L.push('Required structure (fill all fields with real data for the specific item):');
+  L.push('');
+  L.push('{');
+  L.push('  "item": "canonical name including model",');
+  L.push('  "category": "product category",');
+  L.push('  "verdict": "2-3 sentence unvarnished truth. Most overlooked burden in the last sentence.",');
+  L.push('  "costs": {');
+  L.push('    "acquisition_price": "price range",');
+  L.push('    "acquisition_extras": "tax, delivery, install",');
+  L.push('    "ongoing_annual_money": "all annual recurring costs",');
+  L.push('    "time_annual_hours": "hours per year",');
+  L.push('    "time_per_use_minutes": "minutes per session incl setup",');
+  L.push('    "effort_level": "L or M or H",');
+  L.push('    "space_sqft": "sq ft or minimal",');
+  L.push('    "space_note": "space cost implication",');
+  L.push('    "lifetime_years": "expected lifespan",');
+  L.push('    "lifetime_total_cost": "all-in lifetime cost",');
+  L.push('    "resale_value": "% of original price at end of life",');
+  L.push('    "overhead": {');
+  L.push('      "physical": "H or M or L",');
+  L.push('      "temporal": "H or M or L",');
+  L.push('      "mental":   "H or M or L",');
+  L.push('      "health":   "H or M or L",');
+  L.push('      "privacy":  "H or M or L",');
+  L.push('      "social":   "H or M or L"');
+  L.push('    }');
+  L.push('  },');
+  L.push('  "ownership_recommendation": {');
+  L.push('    "recommended_mode": "buy or rent or lease or borrow or subscribe or avoid",');
+  L.push('    "reasoning": "2-3 sentences",');
+  L.push('    "options": [');
+  L.push('      {"mode": "buy",    "viable": true,  "when": "specific condition"},');
+  L.push('      {"mode": "rent",   "viable": true,  "when": "specific condition"},');
+  L.push('      {"mode": "borrow", "viable": true,  "when": "specific condition"}');
+  L.push('    ]');
+  L.push('  },');
+  L.push('  "phases": {');
+  L.push('    "pre":       [{"text": "pre-acquisition requirement", "critical": false}],');
+  L.push('    "acquire":   [{"text": "acquisition cost trap",       "critical": false}],');
+  L.push('    "first":     [{"text": "first-use setup obligation",  "critical": false}],');
+  L.push('    "regular":   [{"text": "recurring maintenance",       "critical": false}],');
+  L.push('    "light":     [{"text": "dormancy or underuse cost",   "critical": false}],');
+  L.push('    "heavy":     [{"text": "aggressive use requirement",  "critical": true}],');
+  L.push('    "special":   [{"text": "environmental condition",     "critical": false}],');
+  L.push('    "dispose":   [{"text": "exit or disposal step",       "critical": false}],');
+  L.push('    "aftermath": [{"text": "lingering second-order effect","critical": true}]');
+  L.push('  },');
+  L.push('  "negative_effects": {');
+  L.push('    "physical":          [{"text": "health or body effect",     "critical": false}],');
+  L.push('    "financial":         [{"text": "financial drain",           "critical": false}],');
+  L.push('    "relational_social": [{"text": "social or identity effect", "critical": false}],');
+  L.push('    "environmental":     [{"text": "environmental effect",      "critical": false}]');
+  L.push('  },');
+  L.push('  "solutions": [');
+  L.push('    {"for_effect": "physical",          "items": [{"action": "specific mitigation", "effort": "L or M or H", "impact": "what it eliminates"}]},');
+  L.push('    {"for_effect": "financial",         "items": [{"action": "mitigation",          "effort": "L or M or H", "impact": "impact"}]},');
+  L.push('    {"for_effect": "relational_social", "items": [{"action": "mitigation",          "effort": "L or M or H", "impact": "impact"}]},');
+  L.push('    {"for_effect": "environmental",     "items": [{"action": "mitigation",          "effort": "L or M or H", "impact": "impact"}]}');
+  L.push('  ],');
+  L.push('  "scope": {');
+  L.push('    "micro": {"lens": "Item-Level",           "insight": "performance, quirks, failure modes for this specific item", "fit_score": 75, "fit_label": "Good fit"},');
+  L.push('    "meso":  {"lens": "Use-Case / Problem Fit","insight": "does this actually solve the stated problem? gaps and better-fit alternatives", "fit_score": 60, "fit_label": "Partial fit"},');
+  L.push('    "macro": {"lens": "Systemic / Societal",  "insight": "supply chain, environmental, cultural, or industry-level dynamics", "fit_score": 50, "fit_label": "Mixed"}');
+  L.push('  },');
+  L.push('  "design_archaeology": {');
+  L.push('    "origin": "why this category was invented",');
+  L.push('    "evolution": [');
+  L.push('      {"era": "Origin",   "description": "what came before", "dot": "past"},');
+  L.push('      {"era": "Current",  "description": "dominant form today", "dot": "present"},');
+  L.push('      {"era": "Emerging", "description": "what is replacing it", "dot": "future"}');
+  L.push('    ],');
+  L.push('    "tradeoffs": "what each era gained and lost",');
+  L.push('    "quality_tiers": [');
+  L.push('      {"tier": "Budget",  "fill_pct": 20,  "note": "what breaks first"},');
+  L.push('      {"tier": "Mid",     "fill_pct": 55,  "note": "the sweet spot"},');
+  L.push('      {"tier": "Premium", "fill_pct": 80,  "note": "what premium buys"},');
+  L.push('      {"tier": "Pro",     "fill_pct": 100, "note": "when it matters"}');
+  L.push('    ]');
+  L.push('  },');
+  L.push('  "alternatives": [');
+  L.push('    {"name": "alternative", "why_better": "specific reason", "tradeoff": "what you give up", "tags": ["tag1"]}');
+  L.push('  ]');
+  L.push('}');
+  L.push('');
+  L.push('Rules: 3-5 items per phase/effect/solutions array. critical:true only when commonly missed AND consequence is severe. fit_score is integer 0-100. All string values are real content, not placeholders.');
+  return L.join('\n');
+}
+
+// ── RENDER
+function renderResults(item, model, ctx, d){
+  var c=d.costs||{}, oh=c.overhead||{}, rec=d.ownership_recommendation||{}, arch=d.design_archaeology||{};
+  var meta=[]; if(model) meta.push('Model: '+model); if(ctx) meta.push('Context: '+ctx); if(d.category) meta.push(d.category);
+
+  var H='<div class="r-hdr"><div>'+
+    '<div class="r-name">'+esc(d.item||item)+'</div>'+
+    (meta.length?'<div class="r-meta">'+esc(meta.join('  ·  '))+'</div>':'')+
+  '</div><div class="r-verdict">'+esc(d.verdict||'')+'</div></div>';
+
+  var EXP='<div class="export-bar">'+
+    '<span class="exp-lbl">Export:</span>'+
+    '<button class="exp-btn" id="btn-md">&#x2193; Markdown</button>'+
+    '<button class="exp-btn" id="btn-json">&#x2193; JSON</button>'+
+    '<button class="exp-btn" id="btn-pdf">&#x2193; PDF</button>'+
+    '<button class="exp-btn" id="btn-copy">&#x2398; Copy MD</button>'+
+  '</div>';
+
+  function cc(l,v,s,cls){ return '<div class="cc'+(cls?' '+cls:'')+'"><div class="cc-lbl">'+l+'</div><div class="cc-val">'+esc(v||'--')+'</div><div class="cc-sub">'+esc(s||'')+'</div></div>'; }
+  var ohT=Object.keys(OH_LABELS).map(function(k){
+    var v=((oh[k]||'?').trim().toUpperCase().charAt(0));
+    return '<span class="oh-tag oh-'+v+'">'+OH_LABELS[k]+': '+v+'</span>';
+  }).join('');
+
+  var COST='<div class="cost-matrix"><div class="eyebrow">COST &amp; OVERHEAD MATRIX</div><div class="cost-grid">'+
+    cc('Acquisition Price',  c.acquisition_price,    'Sticker / unit cost')+
+    cc('Acquisition Extras', c.acquisition_extras,   'Tax, fees, delivery')+
+    cc('Ongoing / Year',     c.ongoing_annual_money, 'All recurring costs','hl')+
+    cc('Time / Year (hrs)',  c.time_annual_hours,    'Total annual attention')+
+    cc('Time / Use (min)',   c.time_per_use_minutes, 'Setup + use + teardown')+
+    cc('Effort / Use',       c.effort_level,         'L=Low  M=Med  H=High')+
+    cc('Space (sq ft)',      c.space_sqft,           c.space_note||'Footprint')+
+    cc('Expected Lifetime',  c.lifetime_years,       'Under normal conditions')+
+    cc('Total Lifetime Cost',c.lifetime_total_cost,  'All-in over full life','danger')+
+    cc('Resale Value',       c.resale_value,         '% of purchase at end of life')+
+  '</div><div class="oh-row"><span class="oh-lbl">Overhead:</span>'+ohT+'</div></div>';
+
+  var rm=(rec.recommended_mode||'buy').toLowerCase(), rc=MODE_COLORS[rm]||'#c8973a';
+  var ro=(rec.options||[]).filter(function(o){return o.viable!==false;}).map(function(o){
+    return '<div class="rec-opt'+(o.mode===rm?' best':'')+'">'+
+      '<div class="rec-opt-mode" style="color:'+(MODE_COLORS[o.mode]||'#888')+'">'+esc((o.mode||'').toUpperCase())+'</div>'+
+      '<div class="rec-opt-when">'+esc(o.when||'')+'</div></div>';
+  }).join('');
+  var REC='<div class="own-rec"><div>'+
+    '<div class="rec-word" style="color:'+rc+'">'+esc(rm.toUpperCase())+'</div>'+
+    '<div class="rec-lbl">Recommended Mode</div></div>'+
+    '<div class="rec-opts">'+ro+'</div>'+
+    '<div class="rec-reason">'+esc(rec.reasoning||'')+'</div></div>';
+
+  var pc=PHASES.map(function(p,i){
+    var its=(d.phases&&d.phases[p.key])||[]; if(!its.length) return '';
+    var lis=its.map(function(it){
+      var t=it.text||it,crit=it.critical===true;
+      return '<li class="pi'+(crit?' crit':'')+'">'+esc(t)+(crit?'<span class="cbadge">critical</span>':'')+'</li>';
+    }).join('');
+    return '<div class="phase-card '+p.cls+'" style="animation-delay:'+(i*0.04)+'s">'+
+      '<div class="phase-num">'+p.num+' / '+p.key.toUpperCase()+'</div>'+
+      '<div class="phase-title">'+p.label+'</div>'+
+      '<ul class="phase-items">'+lis+'</ul></div>';
+  }).join('');
+  var PH='<div class="phases-section"><div class="phases-eyebrow">LIFECYCLE OBLIGATIONS — BY PHASE</div><div class="phases-grid">'+pc+'</div></div>';
+
+  var negSecs=[{key:'physical',label:'Physical &amp; Health'},{key:'financial',label:'Financial Erosion'},{key:'relational_social',label:'Relational &amp; Social'},{key:'environmental',label:'Environmental'}];
+  var nb=negSecs.map(function(s){
+    var its=((d.negative_effects||{})[s.key])||[]; if(!its.length) return '';
+    var lis=its.map(function(it){var t=it.text||it,c=it.critical===true; return '<li class="ni'+(c?' crit':'')+'">'+esc(t)+(c?'<span class="cbadge">critical</span>':'')+'</li>';}).join('');
+    return '<div><div class="neg-title">'+s.label+'</div><ul class="neg-list">'+lis+'</ul></div>';
+  }).join('');
+  var NEG='<div class="neg-section"><div class="eyebrow">NEGATIVE EFFECTS — WHAT IT DOES TO YOU &amp; THE WORLD</div><div class="neg-grid">'+nb+'</div></div>';
+
+  var evo=(arch.evolution||[]).map(function(e){
+    return '<div class="evo-row"><div class="evo-dot '+(e.dot||'present')+'"></div>'+
+      '<div class="evo-inner"><span class="evo-era">'+esc(e.era||'')+'</span><br>'+esc(e.description||'')+'</div></div>';
+  }).join('');
+  var qt=(arch.quality_tiers||[]).map(function(t){
+    var p=t.fill_pct||50,col=p>=75?'var(--green)':p>=45?'var(--accent)':'var(--muted)';
+    return '<div class="qtier"><div class="qt-name">'+esc(t.tier||'')+'</div>'+
+      '<div class="qt-bar"><div class="qt-fill" style="width:'+p+'%;background:'+col+'"></div></div>'+
+      '<div class="qt-note">'+esc(t.note||'')+'</div></div>';
+  }).join('');
+  var ARCH='<div class="arch-section"><div class="eyebrow">DESIGN ARCHAEOLOGY</div><div class="arch-grid">'+
+    '<div class="arch-card"><div class="arch-title">ORIGIN &amp; EVOLUTION</div><div class="arch-body">'+esc(arch.origin||'')+'</div><div class="evo-chain">'+evo+'</div></div>'+
+    '<div class="arch-card"><div class="arch-title">GENERATIONAL TRADE-OFFS</div><div class="arch-body">'+esc(arch.tradeoffs||'')+'</div></div>'+
+    '<div class="arch-card"><div class="arch-title">QUALITY HIERARCHY</div><div class="qtiers">'+qt+'</div></div>'+
+  '</div></div>';
+
+  var altsData=d.alternatives||[];
+  var ac=altsData.map(function(a,i){
+    var tags=(a.tags||[]).map(function(t){return '<span class="alt-tag">'+esc(t)+'</span>';}).join('');
+    return '<div class="alt-card" style="animation-delay:'+(i*0.06)+'s">'+
+      '<div class="alt-rank">ALTERNATIVE '+(i+1)+'</div>'+
+      '<div class="alt-name">'+esc(a.name||'')+'</div>'+
+      '<div class="alt-why">'+esc(a.why_better||'')+'</div>'+
+      (a.tradeoff?'<div class="alt-trade">Trade-off: '+esc(a.tradeoff)+'</div>':'')+
+      '<div class="alt-tags">'+tags+'</div>'+
+      '<button class="alt-btn" data-index="'+i+'">&#x2192; ANALYZE THIS</button></div>';
+  }).join('');
+  var ALTS='<div class="alt-section"><div class="eyebrow">BETTER ALTERNATIVES — HEALTH &middot; FUNCTION &middot; SUSTAINABILITY &middot; ALIGNMENT</div><div class="alt-grid">'+ac+'</div></div>';
+
+  // ── SCOPE
+  var sc = d.scope || {};
+  var scopeLenses = [{key:'micro',num:'01',col:'var(--blue)'},{key:'meso',num:'02',col:'var(--accent)'},{key:'macro',num:'03',col:'var(--purple)'}];
+  var scopeCards = scopeLenses.map(function(l){
+    var s = sc[l.key] || {};
+    var score = Math.min(100, Math.max(0, s.fit_score||50));
+    var fitClass = score>=70?'fit-high':score>=45?'fit-mid':'fit-low';
+    var fitCol   = score>=70?'var(--green)':score>=45?'var(--accent)':'var(--red)';
+    return '<div class="scope-card">'+
+      '<div class="scope-lens" style="color:'+l.col+'">'+esc(s.lens||l.key.toUpperCase())+'</div>'+
+      '<div class="scope-zoom">'+l.num+' / '+(l.key==='micro'?'ITEM LEVEL':l.key==='meso'?'USE-CASE FIT':'SYSTEMIC VIEW')+'</div>'+
+      '<div class="scope-body">'+esc(s.insight||'')+'</div>'+
+      '<div class="scope-fit"><div class="scope-fit-bar"><div class="scope-fit-fill" style="width:'+score+'%;background:'+fitCol+'"></div></div>'+
+      '<div class="scope-fit-label '+fitClass+'">'+esc(s.fit_label||score+'% fit')+'</div></div>'+
+    '</div>';
+  }).join('');
+  var SCOPE = '<div class="scope-section"><div class="eyebrow">SCOPE — THREE LENSES OF ANALYSIS</div><div class="scope-grid">'+scopeCards+'</div></div>';
+
+  // ── SOLUTIONS
+  var solData = d.solutions || [];
+  var solLabelMap = {physical:'Physical &amp; Health',financial:'Financial Erosion',relational_social:'Relational &amp; Social',environmental:'Environmental'};
+  var solBlocks = solData.map(function(sg){
+    if(!sg.items||!sg.items.length) return '';
+    var lis = sg.items.map(function(it){
+      var eff = (it.effort||'M').toUpperCase().charAt(0);
+      return '<li class="sol-item"><div class="sol-action"><div>'+esc(it.action||'')+'</div>'+(it.impact?'<div class="sol-impact">&#x21B3; '+esc(it.impact)+'</div>':'')+'</div><div class="sol-effort sol-eff-'+eff+'">'+eff+'</div></li>';
+    }).join('');
+    return '<div class="sol-group"><div class="sol-group-title">'+(solLabelMap[sg.for_effect]||esc(sg.for_effect||''))+'</div><ul class="sol-list">'+lis+'</ul></div>';
+  }).filter(Boolean).join('');
+  var SOL = solBlocks ? '<div class="solutions-section"><div class="eyebrow">SOLUTIONS &amp; MITIGATIONS — REMOVE OR REDUCE EVERY NEGATIVE</div><div class="sol-grid">'+solBlocks+'</div></div>' : '';
+
+  var mode = storeGet(SK_MODE) || activeMode;
+  var geminiBanner = (mode === 'gemini')
+    ? '<div style="padding:0.65rem 3rem;background:#1a1200;border-bottom:1px solid rgba(200,151,58,0.2);font-size:0.62rem;color:#8a7030;letter-spacing:0.06em;">&#x26A0; Generated by Google Gemini &mdash; built and optimized for Claude; structure and depth may differ.</div>'
+    : '';
+
+  resultsEl.innerHTML=H+geminiBanner+EXP+COST+REC+SCOPE+PH+NEG+SOL+ARCH+ALTS;
+  resultsEl.classList.add('on');
+  resultsEl.scrollIntoView({behavior:'smooth'});
+
+  document.getElementById('btn-md').addEventListener('click', exportMD);
+  document.getElementById('btn-json').addEventListener('click', exportJSON);
+  document.getElementById('btn-pdf').addEventListener('click', exportPDF);
+  document.getElementById('btn-copy').addEventListener('click', function(){copyMD(this);});
+  resultsEl.querySelectorAll('.alt-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var a=altsData[parseInt(btn.dataset.index,10)];
+      if(a&&a.name){itemInput.value=a.name;modelInput.value='';window.scrollTo({top:0,behavior:'smooth'});analyze();}
+    });
+  });
+}
+
+// ── EXPORT
+function toMD(){
+  var d=currentData; if(!d) return '';
+  var c=d.costs||{},rec=d.ownership_recommendation||{},arch=d.design_archaeology||{};
+  var md='# '+(d.item||'Item')+' -- True Cost of Ownership\n\n';
+  md+='> '+(d.verdict||'')+'\n\n';
+  if(d.category) md+='**Category:** '+d.category+'\n\n';
+  md+='## Cost & Overhead Matrix\n\n| Metric | Value |\n|---|---|\n';
+  [['Acquisition Price',c.acquisition_price],['Acquisition Extras',c.acquisition_extras],
+   ['Ongoing / Year',c.ongoing_annual_money],['Time / Year (hrs)',c.time_annual_hours],
+   ['Time / Use (min)',c.time_per_use_minutes],['Effort Level',c.effort_level],
+   ['Space (sq ft)',c.space_sqft],['Expected Lifetime',c.lifetime_years],
+   ['Total Lifetime Cost',c.lifetime_total_cost],['Resale Value',c.resale_value]
+  ].forEach(function(r){if(r[1]) md+='| '+r[0]+' | '+r[1]+' |\n';});
+  md+='\n**Overhead:**\n';
+  Object.keys(c.overhead||{}).forEach(function(k){md+='- '+k+': **'+(c.overhead[k]||'')+'**\n';});
+  md+='\n## Ownership Recommendation\n\n**-> '+(rec.recommended_mode||'').toUpperCase()+'**\n\n'+(rec.reasoning||'')+'\n\n';
+  (rec.options||[]).filter(function(o){return o.viable!==false;}).forEach(function(o){md+='- **'+(o.mode||'').toUpperCase()+'**: '+(o.when||'')+'\n';});
+  var PHL={pre:'Pre-Acquisition',acquire:'Acquisition',first:'First Use / Setup',regular:'Regular Maintenance',light:'Underuse / Dormancy',heavy:'Heavy / Aggressive Use',special:'Special Conditions',dispose:'Disposal / Exit',aftermath:'Aftermath'};
+  md+='\n## Lifecycle Phases\n\n';
+  Object.keys(PHL).forEach(function(k){
+    var its=(d.phases&&d.phases[k])||[]; if(!its.length) return;
+    md+='### '+PHL[k]+'\n';
+    its.forEach(function(it){md+='- '+(it.text||it)+(it.critical?' WARNING CRITICAL':'')+'\n';});
+    md+='\n';
+  });
+  md+='## Negative Effects\n\n';
+  [{key:'physical',label:'Physical & Health'},{key:'financial',label:'Financial Erosion'},{key:'relational_social',label:'Relational & Social'},{key:'environmental',label:'Environmental'}
+  ].forEach(function(s){
+    var its=((d.negative_effects||{})[s.key])||[]; if(!its.length) return;
+    md+='### '+s.label+'\n';
+    its.forEach(function(it){md+='- '+(it.text||it)+(it.critical?' WARNING CRITICAL':'')+'\n';});
+    md+='\n';
+  });
+  md+='## Design Archaeology\n\n**Origin:** '+(arch.origin||'')+'\n\n**Trade-offs:** '+(arch.tradeoffs||'')+'\n\n';
+  if((arch.evolution||[]).length){md+='**Evolution:**\n';arch.evolution.forEach(function(e){md+='- **'+(e.era||'')+'**: '+(e.description||'')+'\n';});md+='\n';}
+  if((arch.quality_tiers||[]).length){md+='**Quality Tiers:**\n';arch.quality_tiers.forEach(function(t){md+='- **'+(t.tier||'')+'**: '+(t.note||'')+'\n';});md+='\n';}
+  md+='## Better Alternatives\n\n';
+  (d.alternatives||[]).forEach(function(a,i){
+    md+='### '+(i+1)+'. '+(a.name||'')+'\n**Why better:** '+(a.why_better||'')+'\n';
+    if(a.tradeoff) md+='**Trade-off:** '+a.tradeoff+'\n';
+    if(a.tags&&a.tags.length) md+='**Tags:** '+a.tags.join(', ')+'\n';
+    md+='\n';
+  });
+  md+='---\n*Generated by OWNED -- True Cost of Ownership Engine*\n';
+  return md;
+}
+function exportMD(){var md=toMD();if(!md)return;dlFile(sn()+'_ownership.md',md,'text/markdown');}
+function exportJSON(){if(!currentData)return;dlFile(sn()+'_ownership.json',JSON.stringify(currentData,null,2),'application/json');}
+function exportPDF(){
+  var d=currentData; if(!d) return;
+  // Hide UI chrome, print, restore
+  var style=document.createElement('style');
+  style.id='print-override';
+  style.textContent='@media screen{#keyScreen,#setupScreen,#promptModal,.hdr-key-btn,.btn-row,.chips,.export-bar,.btn-stop{display:none!important;}}';
+  document.head.appendChild(style);
+  window.print();
+  setTimeout(function(){ var s=document.getElementById('print-override'); if(s) s.remove(); }, 1000);
+}
+function copyMD(btn){var md=toMD();if(!md)return;navigator.clipboard.writeText(md).then(function(){var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o;},1800);});}
+function dlFile(name,content,type){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:type}));a.download=name;a.click();}
+function sn(){return((currentData&&currentData.item)||'item').replace(/[^a-z0-9]/gi,'_').toLowerCase();}
+function showError(msg){
+  resultsEl.innerHTML='<div style="padding:2rem 3rem;font-size:0.73rem;color:var(--red)">ERROR: '+esc(msg)+'<br><br><small style="color:var(--muted)">Check your key, network, or switch to Claude.ai mode.</small></div>';
+  resultsEl.classList.add('on');
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWNED — True Cost of Ownership</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0a;--surface:#131311;--border:#252522;--border2:#1e1e1b;
+  --accent:#c8973a;--adim:rgba(200,151,58,0.12);
+  --red:#b83232;--rdim:rgba(184,50,50,0.09);
+  --green:#4e9a6e;--blue:#4278a5;--purple:#7a5fa0;
+  --text:#ddd9cf;--text2:#a8a49c;--muted:#5c5a54;
+  --critbg:rgba(184,50,50,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+header{padding:2rem 3rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;gap:2rem;flex-wrap:wrap;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,6rem);letter-spacing:0.06em;color:var(--accent);line-height:1;}
+.hdr-right{display:flex;flex-direction:column;gap:0.2rem;padding-bottom:0.3rem;}
+.tagline{font-size:0.64rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;line-height:2.1;}
+.tagline em{color:var(--accent);font-style:normal;}
+.vtag{font-size:0.54rem;color:var(--muted);letter-spacing:0.13em;border:1px solid var(--border);padding:0.1rem 0.45rem;width:fit-content;}
+
+/* INPUT */
+.input-section{padding:1.6rem 3rem;border-bottom:1px solid var(--border);}
+.main-row{display:flex;gap:0.7rem;margin-bottom:0.8rem;}
+.main-row input{flex:1;font-size:0.88rem;padding:0.8rem 1rem;}
+.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.8rem;}
+.fg{display:flex;flex-direction:column;gap:0.3rem;}
+.flabel{font-size:0.54rem;letter-spacing:0.17em;text-transform:uppercase;color:var(--muted);}
+.flabel em{color:var(--accent);font-style:normal;}
+input[type=text],textarea{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  font-family:'DM Mono',monospace;font-size:0.78rem;padding:0.6rem 0.85rem;
+  outline:none;transition:border-color 0.17s;width:100%;letter-spacing:0.02em;resize:vertical;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--accent);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+.btn-row{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;}
+.btn{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.12em;padding:0.62rem 1.7rem;border:none;cursor:pointer;transition:all 0.14s;white-space:nowrap;}
+.btn-go{background:var(--accent);color:#0c0c0a;}
+.btn-go:hover{background:#d9a840;transform:translateY(-1px);}
+.btn-go:disabled{opacity:0.28;cursor:not-allowed;transform:none;}
+.btn-stop{background:var(--red);color:#fff;display:none;}
+.btn-stop:hover{background:#c83a3a;}
+.btn-stop.vis{display:inline-block;}
+.chips{display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;margin-top:0.65rem;}
+.chips-lbl{font-size:0.53rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-right:0.15rem;}
+.chip{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.64rem;padding:0.18rem 0.55rem;cursor:pointer;transition:all 0.13s;letter-spacing:0.04em;}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+
+/* LOADING */
+#loadingState{display:none;padding:5rem 3rem;text-align:center;}
+#loadingState.on{display:block;}
+.loader-word{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,3rem);color:var(--accent);letter-spacing:0.25em;animation:blink 1.3s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+.loader-sub{font-size:0.6rem;color:var(--muted);letter-spacing:0.15em;margin-top:0.45rem;text-transform:uppercase;}
+
+/* WELCOME */
+#welcomeState{padding:5rem 3rem;text-align:center;}
+.whl{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,3.5vw,2.5rem);font-style:italic;color:var(--text2);line-height:1.5;margin-bottom:1.1rem;}
+.wbody{font-size:0.69rem;color:var(--muted);max-width:510px;margin:0 auto;line-height:2.2;letter-spacing:0.04em;}
+
+/* RESULTS */
+#results{display:none;}
+#results.on{display:block;}
+
+/* RESULT HEADER */
+.r-hdr{padding:1.7rem 3rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1.4rem;flex-wrap:wrap;}
+.r-name{font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,4vw,2.9rem);font-style:italic;color:var(--text);line-height:1.1;margin-bottom:0.25rem;}
+.r-meta{font-size:0.58rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;line-height:1.9;}
+.r-verdict{font-family:'Cormorant Garamond',serif;font-size:0.98rem;font-style:italic;color:var(--text2);max-width:420px;line-height:1.75;border-left:2px solid var(--accent);padding-left:1rem;}
+
+/* EXPORT BAR */
+.export-bar{padding:0.65rem 3rem;border-bottom:1px solid var(--border);background:var(--surface);display:flex;gap:0.55rem;align-items:center;flex-wrap:wrap;}
+.exp-lbl{font-size:0.53rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-right:0.15rem;}
+.exp-btn{background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:0.61rem;padding:0.26rem 0.72rem;cursor:pointer;letter-spacing:0.07em;transition:all 0.13s;}
+.exp-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* COST MATRIX */
+.cost-matrix{padding:1.7rem 3rem;border-bottom:1px solid var(--border);background:var(--surface);}
+.eyebrow{font-size:0.53rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.9rem;}
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px;background:var(--border);}
+.cc{background:var(--bg);padding:1rem 1.1rem;}
+.cc.hl{background:var(--adim);}
+.cc.danger{background:var(--rdim);}
+.cc-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.2rem;}
+.cc-val{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:0.05em;color:var(--accent);line-height:1;}
+.cc.danger .cc-val{color:var(--red);}
+.cc-sub{font-size:0.56rem;color:var(--muted);line-height:1.5;margin-top:0.15rem;}
+.oh-row{margin-top:1.1rem;display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;}
+.oh-lbl{font-size:0.53rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-right:0.15rem;}
+.oh-tag{font-size:0.58rem;padding:0.18rem 0.62rem;border:1px solid;}
+.oh-H{border-color:rgba(184,50,50,0.45);color:#c86060;background:rgba(184,50,50,0.08);}
+.oh-M{border-color:rgba(200,151,58,0.4);color:#c8973a;background:rgba(200,151,58,0.07);}
+.oh-L{border-color:rgba(78,154,110,0.35);color:#5aaa7e;background:rgba(78,154,110,0.07);}
+
+/* OWNERSHIP REC */
+.own-rec{padding:1.5rem 3rem;border-bottom:1px solid var(--border);display:flex;gap:1.6rem;flex-wrap:wrap;align-items:flex-start;}
+.rec-primary{}
+.rec-word{font-family:'Bebas Neue',sans-serif;font-size:2.3rem;letter-spacing:0.1em;line-height:1;}
+.rec-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.17em;text-transform:uppercase;margin-top:0.12rem;}
+.rec-opts{flex:1;display:flex;gap:0.45rem;flex-wrap:wrap;align-items:flex-start;}
+.rec-opt{padding:0.5rem 0.85rem;border:1px solid var(--border);min-width:96px;}
+.rec-opt.best{border-color:var(--accent);background:var(--adim);}
+.rec-opt-mode{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.08em;}
+.rec-opt-when{font-size:0.56rem;color:var(--text2);line-height:1.5;margin-top:0.12rem;}
+.rec-reason{flex:1 1 100%;font-size:0.71rem;color:var(--text2);line-height:1.85;border-top:1px solid var(--border);padding-top:0.85rem;margin-top:0.35rem;}
+
+/* PHASES */
+.phases-section{border-bottom:1px solid var(--border);}
+.phases-eyebrow{padding:1.3rem 3rem 0;font-size:0.53rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;}
+.phases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1px;background:var(--border);margin-top:0.8rem;}
+.phase-card{background:var(--bg);padding:1.5rem 1.7rem;position:relative;animation:fadeUp 0.3s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.phase-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;}
+.pc-pre::before{background:var(--blue);}
+.pc-acquire::before{background:var(--accent);}
+.pc-first::before{background:var(--green);}
+.pc-regular::before{background:var(--purple);}
+.pc-light::before{background:#8b7040;}
+.pc-heavy::before{background:var(--red);}
+.pc-special::before{background:#7a5fa0;}
+.pc-dispose::before{background:var(--muted);}
+.pc-aftermath::before{background:#7a3010;}
+.phase-num{font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:0.18rem;}
+.phase-title{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:0.1em;margin-bottom:0.85rem;line-height:1;}
+.pc-pre .phase-title{color:var(--blue);}
+.pc-acquire .phase-title{color:var(--accent);}
+.pc-first .phase-title{color:var(--green);}
+.pc-regular .phase-title{color:var(--purple);}
+.pc-light .phase-title{color:#a08040;}
+.pc-heavy .phase-title{color:var(--red);}
+.pc-special .phase-title{color:#9a7fc0;}
+.pc-dispose .phase-title{color:var(--muted);}
+.pc-aftermath .phase-title{color:#b05030;}
+.phase-items{list-style:none;}
+.pi{font-size:0.73rem;line-height:1.65;color:var(--text2);padding:0.36rem 0 0.36rem 1.25rem;border-bottom:1px solid var(--border2);position:relative;}
+.pi:last-child{border-bottom:none;}
+.pi::before{content:'—';position:absolute;left:0;color:var(--muted);font-size:0.6rem;top:0.5rem;}
+.pi.crit{color:#d09090;background:var(--critbg);border-bottom-color:rgba(184,50,50,0.08);padding-left:1.55rem;margin:0 -0.35rem;padding-right:0.35rem;}
+.pi.crit::before{content:'!';color:var(--red);font-weight:700;}
+.cbadge{display:inline-block;font-size:0.47rem;letter-spacing:0.13em;text-transform:uppercase;background:var(--red);color:#fff;padding:0.08rem 0.3rem;margin-left:0.4rem;vertical-align:middle;}
+
+/* NEGATIVE EFFECTS */
+.neg-section{padding:1.7rem 3rem;border-bottom:1px solid var(--border);background:#0f0808;}
+.neg-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 2.3rem;margin-top:0.9rem;}
+.neg-title{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.1em;color:var(--red);margin-bottom:0.65rem;}
+.neg-list{list-style:none;}
+.ni{font-size:0.71rem;color:#b09090;line-height:1.7;padding:0.27rem 0 0.27rem 1.15rem;position:relative;border-bottom:1px solid #1a0f0f;}
+.ni:last-child{border-bottom:none;}
+.ni::before{content:'✕';position:absolute;left:0;color:#6a3030;font-size:0.57rem;top:0.4rem;}
+.ni.crit{color:#d08080;}
+.ni.crit::before{color:var(--red);}
+
+/* ARCHAEOLOGY */
+.arch-section{padding:1.7rem 3rem;border-bottom:1px solid var(--border);}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);margin-top:0.9rem;}
+.arch-card{background:var(--bg);padding:1.4rem;}
+.arch-title{font-family:'Bebas Neue',sans-serif;font-size:0.92rem;letter-spacing:0.12em;color:var(--text2);margin-bottom:0.65rem;}
+.arch-body{font-size:0.7rem;color:var(--text2);line-height:1.85;}
+.evo-chain{display:flex;flex-direction:column;gap:0.42rem;margin-top:0.65rem;}
+.evo-row{display:flex;gap:0.55rem;align-items:flex-start;}
+.evo-dot{width:6px;height:6px;border-radius:50%;margin-top:0.37rem;flex-shrink:0;}
+.evo-dot.past{background:var(--muted);}
+.evo-dot.present{background:var(--accent);}
+.evo-dot.future{background:var(--green);}
+.evo-inner{font-size:0.67rem;color:var(--text2);line-height:1.55;}
+.evo-era{font-size:0.5rem;color:var(--muted);letter-spacing:0.11em;text-transform:uppercase;}
+.qtiers{display:flex;flex-direction:column;gap:0.38rem;margin-top:0.5rem;}
+.qtier{display:flex;gap:0.65rem;align-items:center;}
+.qt-name{font-size:0.57rem;color:var(--text2);letter-spacing:0.04em;min-width:46px;}
+.qt-bar{height:3px;background:var(--border);flex:0 0 68px;position:relative;}
+.qt-fill{position:absolute;left:0;top:0;height:100%;}
+.qt-note{font-size:0.57rem;color:var(--muted);}
+
+/* ALTERNATIVES */
+.alt-section{padding:1.7rem 3rem;}
+.alt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1px;background:var(--border);margin-top:0.9rem;}
+.alt-card{background:var(--bg);padding:1.3rem 1.5rem;display:flex;flex-direction:column;gap:0.55rem;animation:fadeUp 0.3s ease both;}
+.alt-rank{font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;}
+.alt-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--text);line-height:1.2;}
+.alt-why{font-size:0.69rem;color:var(--text2);line-height:1.72;}
+.alt-trade{font-size:0.63rem;color:var(--muted);line-height:1.6;}
+.alt-tags{display:flex;gap:0.32rem;flex-wrap:wrap;}
+.alt-tag{font-size:0.55rem;padding:0.14rem 0.48rem;border:1px solid rgba(78,154,110,0.35);color:#5aaa7e;background:rgba(78,154,110,0.06);letter-spacing:0.05em;}
+.alt-btn{margin-top:auto;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:0.61rem;padding:0.35rem 0.7rem;cursor:pointer;letter-spacing:0.07em;transition:all 0.13s;text-align:left;width:fit-content;}
+.alt-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* RESPONSIVE */
+@media(max-width:760px){
+  header,.input-section,.r-hdr,.export-bar,.cost-matrix,.own-rec,
+  .phases-eyebrow,.neg-section,.arch-section,.alt-section{padding-left:1.1rem;padding-right:1.1rem;}
+  .sub-grid,.neg-grid,.arch-grid{grid-template-columns:1fr;}
+}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">OWNED</div>
+  <div class="hdr-right">
+    <div class="tagline">Price is what you pay. <em>Cost</em> is what you carry.<br>Full lifecycle intelligence — any item, any context.</div>
+    <div class="vtag">V2 · LIFECYCLE ANALYSIS ENGINE</div>
+  </div>
+</header>
+
+<div class="input-section">
+  <div class="main-row">
+    <input type="text" id="itemInput" placeholder="Item, tool, vehicle, appliance, software, license, animal..." autocomplete="off">
+  </div>
+  <div class="sub-grid">
+    <div class="fg">
+      <label class="flabel">Specific Model / Product <em>(optional)</em></label>
+      <input type="text" id="modelInput" placeholder="e.g. WalkingPad R2 Pro, Breville Barista Express, 2023 Tesla Model 3...">
+    </div>
+    <div class="fg">
+      <label class="flabel">Your Use Case & Context <em>(optional — sharpens results)</em></label>
+      <textarea id="ctxInput" rows="2" placeholder="e.g. WFH under-desk daily use · apartment · hard water · first-time owner · commercial..."></textarea>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-go" id="analyzeBtn">ANALYZE</button>
+    <button class="btn btn-stop" id="stopBtn">■ STOP</button>
+  </div>
+  <div class="chips">
+    <span class="chips-lbl">Try:</span>
+    <button class="chip" data-item="Walking Pad" data-model="WalkingPad R2 Pro" data-ctx="WFH under-desk, daily use, apartment">Walking Pad</button>
+    <button class="chip" data-item="Motorcycle" data-model="" data-ctx="Weekend riding, stored in garage winters">Motorcycle</button>
+    <button class="chip" data-item="Espresso Machine" data-model="Breville Barista Express" data-ctx="Daily home use, hard water area">Espresso Machine</button>
+    <button class="chip" data-item="Dog" data-model="Labrador Retriever" data-ctx="First-time owner, apartment">Dog</button>
+    <button class="chip" data-item="Chainsaw" data-model="Stihl MS 271" data-ctx="Seasonal yard work, long winter storage">Chainsaw</button>
+    <button class="chip" data-item="Rental Property" data-model="Single family home" data-ctx="Self-managed, long-term tenant, suburban">Rental Property</button>
+    <button class="chip" data-item="Firearm" data-model="Glock 19" data-ctx="Home defense, occasional range use, no prior experience">Firearm</button>
+    <button class="chip" data-item="Standing Desk" data-model="Flexispot E7" data-ctx="WFH full-time, back problems, small home office">Standing Desk</button>
+  </div>
+</div>
+
+<div id="loadingState">
+  <div class="loader-word">MAPPING</div>
+  <div class="loader-sub">Tracing lifecycle — costs, risks, alternatives, archaeology</div>
+</div>
+
+<div id="results"></div>
+
+<div id="welcomeState">
+  <div class="whl">"The price tag is the opening bid.<br>The lifecycle is the real negotiation."</div>
+  <div class="wbody">
+    Enter any item — add a specific model and your context for precision.<br><br>
+    This engine maps every obligation of ownership: before you acquire,<br>
+    day-one setup, how use patterns change it, what dormancy costs,<br>
+    exit steps, and what lingers after it's gone.<br><br>
+    Cost matrix · overhead analysis · ownership mode recommendation<br>
+    design archaeology · quality tiers · better alternatives · export
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ── STATE
+var currentData = null;
+var cancelled = false;
+
+// ── CONSTANTS
+var MODE_COLORS = {buy:'#c8973a',rent:'#4278a5',lease:'#7a5fa0',borrow:'#4e9a6e',subscribe:'#6a8a3a',avoid:'#b83232'};
+var OH_LABELS = {physical:'Physical',temporal:'Temporal',mental:'Mental',health:'Health Risk',privacy:'Privacy',social:'Social'};
+var PHASES = [
+  {key:'pre',       label:'PRE-ACQUISITION',        num:'00', cls:'pc-pre'},
+  {key:'acquire',   label:'ACQUISITION',             num:'01', cls:'pc-acquire'},
+  {key:'first',     label:'FIRST USE / SETUP',       num:'02', cls:'pc-first'},
+  {key:'regular',   label:'REGULAR MAINTENANCE',     num:'03', cls:'pc-regular'},
+  {key:'light',     label:'UNDERUSE / DORMANCY',     num:'04', cls:'pc-light'},
+  {key:'heavy',     label:'HEAVY / AGGRESSIVE USE',  num:'05', cls:'pc-heavy'},
+  {key:'special',   label:'SPECIAL CONDITIONS',      num:'06', cls:'pc-special'},
+  {key:'dispose',   label:'DISPOSAL / EXIT',         num:'07', cls:'pc-dispose'},
+  {key:'aftermath', label:'AFTERMATH',               num:'08', cls:'pc-aftermath'}
+];
+
+// ── DOM REFS
+var itemInput   = document.getElementById('itemInput');
+var modelInput  = document.getElementById('modelInput');
+var ctxInput    = document.getElementById('ctxInput');
+var analyzeBtn  = document.getElementById('analyzeBtn');
+var stopBtn     = document.getElementById('stopBtn');
+var loadingEl   = document.getElementById('loadingState');
+var resultsEl   = document.getElementById('results');
+var welcomeEl   = document.getElementById('welcomeState');
+
+// ── EVENT LISTENERS
+analyzeBtn.addEventListener('click', analyze);
+stopBtn.addEventListener('click', stopAnalysis);
+itemInput.addEventListener('keydown', function(e){ if(e.key==='Enter') analyze(); });
+
+// Chips — use data attributes, no inline handlers
+document.querySelectorAll('.chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    itemInput.value  = chip.dataset.item  || '';
+    modelInput.value = chip.dataset.model || '';
+    ctxInput.value   = chip.dataset.ctx   || '';
+    analyze();
+  });
+});
+
+// ── STOP
+function stopAnalysis(){
+  cancelled = true;
+  setLoading(false);
+}
+
+// ── ANALYZE
+function analyze(){
+  var item = itemInput.value.trim();
+  if(!item) return;
+
+  cancelled = false;
+  currentData = null;
+
+  welcomeEl.style.display = 'none';
+  resultsEl.classList.remove('on');
+  setLoading(true);
+
+  var model = modelInput.value.trim();
+  var ctx   = ctxInput.value.trim();
+
+  var payload = JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8000,
+    system: 'You are a ruthlessly precise ownership analyst. Output ONLY valid JSON — no markdown fences, no preamble, no commentary whatsoever. Be deterministic: identical inputs must produce identical structure and consistent data. Surface hidden, non-obvious, and second-order costs and consequences. Mark critical:true only for items that are commonly missed AND have serious consequences.',
+    messages: [{role:'user', content: buildPrompt(item, model, ctx)}]
+  });
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: payload
+  })
+  .then(function(resp){
+    if(cancelled) return null;
+    if(!resp.ok){
+      return resp.json().catch(function(){ return {}; }).then(function(e){
+        throw new Error('API ' + resp.status + ': ' + (e && e.error && e.error.message ? e.error.message : resp.statusText));
+      });
+    }
+    return resp.json();
+  })
+  .then(function(data){
+    if(cancelled || !data) return;
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
+    var parsed = parseJSON(text);
+    if(!parsed) throw new Error('Could not parse response. Preview: ' + text.slice(0,300));
+    currentData = parsed;
+    renderResults(item, model, ctx, parsed);
+  })
+  .catch(function(err){
+    if(cancelled) return;
+    showError(err.message || String(err));
+  })
+  .finally(function(){
+    setLoading(false);
+  });
+}
+
+function setLoading(on){
+  if(on){
+    loadingEl.classList.add('on');
+    analyzeBtn.disabled = true;
+    stopBtn.classList.add('vis');
+  } else {
+    loadingEl.classList.remove('on');
+    analyzeBtn.disabled = false;
+    stopBtn.classList.remove('vis');
+  }
+}
+
+function parseJSON(text){
+  try {
+    var clean = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    var s = clean.indexOf('{');
+    var e = clean.lastIndexOf('}');
+    if(s !== -1 && e > s) clean = clean.slice(s, e+1);
+    return JSON.parse(clean);
+  } catch(err){
+    return null;
+  }
+}
+
+// ── PROMPT — uses string concat to avoid nested backtick issues
+function buildPrompt(item, model, ctx){
+  var lines = [];
+  lines.push('Analyze full true ownership of: "' + item + '"');
+  if(model) lines.push('Specific model/product: "' + model + '"');
+  if(ctx)   lines.push('User context & use case: "' + ctx + '"');
+  lines.push('');
+  lines.push('Return ONLY this JSON structure. No extra text. 3-5 items per phase array. critical:true = commonly missed + serious consequence.');
+  lines.push('');
+  lines.push('{');
+  lines.push('  "item": "canonical name (include model if given)",');
+  lines.push('  "category": "product category",');
+  lines.push('  "verdict": "2-3 sentence unvarnished truth. Include the single most overlooked burden.",');
+  lines.push('  "costs": {');
+  lines.push('    "acquisition_price": "purchase price range",');
+  lines.push('    "acquisition_extras": "tax, fees, delivery, install add-ons at purchase",');
+  lines.push('    "ongoing_annual_money": "all recurring annual costs: maintenance, consumables, insurance, storage, subscriptions",');
+  lines.push('    "time_annual_hours": "total annual hours of attention required",');
+  lines.push('    "time_per_use_minutes": "avg minutes per use session including setup and teardown",');
+  lines.push('    "effort_level": "L or M or H",');
+  lines.push('    "space_sqft": "storage/use footprint in sq ft, or minimal",');
+  lines.push('    "space_note": "real cost implication of space if relevant",');
+  lines.push('    "lifetime_years": "expected useful life under normal use",');
+  lines.push('    "lifetime_total_cost": "all-in cost estimate over full lifetime",');
+  lines.push('    "resale_value": "resale percentage of purchase price at end of useful life",');
+  lines.push('    "overhead": {');
+  lines.push('      "physical": "H or M or L",');
+  lines.push('      "temporal": "H or M or L",');
+  lines.push('      "mental": "H or M or L",');
+  lines.push('      "health": "H or M or L",');
+  lines.push('      "privacy": "H or M or L",');
+  lines.push('      "social": "H or M or L"');
+  lines.push('    }');
+  lines.push('  },');
+  lines.push('  "ownership_recommendation": {');
+  lines.push('    "recommended_mode": "buy or rent or lease or borrow or subscribe or avoid",');
+  lines.push('    "reasoning": "2-3 sentences on why this mode is optimal and what changes that calculus",');
+  lines.push('    "options": [');
+  lines.push('      {"mode":"buy",       "viable":true,  "when":"Best when: [specific condition]"},');
+  lines.push('      {"mode":"rent",      "viable":true,  "when":"Best when: [specific condition]"},');
+  lines.push('      {"mode":"lease",     "viable":false, "when":"Not applicable or rarely available"},');
+  lines.push('      {"mode":"borrow",    "viable":true,  "when":"Best when: [specific condition]"},');
+  lines.push('      {"mode":"subscribe", "viable":false, "when":"N/A"}');
+  lines.push('    ]');
+  lines.push('  },');
+  lines.push('  "phases": {');
+  lines.push('    "pre":       [{"text":"requirement before acquisition","critical":false}],');
+  lines.push('    "acquire":   [{"text":"acquisition step or trap","critical":false}],');
+  lines.push('    "first":     [{"text":"first-use or setup obligation, often undocumented","critical":false}],');
+  lines.push('    "regular":   [{"text":"recurring maintenance under normal use","critical":false}],');
+  lines.push('    "light":     [{"text":"what happens or must be done if unused extended period","critical":false}],');
+  lines.push('    "heavy":     [{"text":"additional requirements under aggressive use","critical":true}],');
+  lines.push('    "special":   [{"text":"condition-specific: temp, humidity, travel, commercial","critical":false}],');
+  lines.push('    "dispose":   [{"text":"exit step: title, data, hazmat, deregistration","critical":false}],');
+  lines.push('    "aftermath": [{"text":"second-order effect lingering after item is gone","critical":true}]');
+  lines.push('  },');
+  lines.push('  "negative_effects": {');
+  lines.push('    "physical":          [{"text":"physical or health effect from long-term use","critical":false}],');
+  lines.push('    "financial":         [{"text":"financial effect beyond purchase price","critical":false}],');
+  lines.push('    "relational_social": [{"text":"effect on relationships, identity, social dynamics","critical":false}],');
+  lines.push('    "environmental":     [{"text":"environmental or systemic effect","critical":false}]');
+  lines.push('  },');
+  lines.push('  "design_archaeology": {');
+  lines.push('    "origin": "why this product category was invented, the original problem solved",');
+  lines.push('    "evolution": [');
+  lines.push('      {"era":"Origin",           "description":"what came before this","dot":"past"},');
+  lines.push('      {"era":"Current Standard", "description":"dominant form today","dot":"present"},');
+  lines.push('      {"era":"Emerging",         "description":"what is replacing or evolving it","dot":"future"}');
+  lines.push('    ],');
+  lines.push('    "tradeoffs": "what each generation gained and lost; what current form optimizes for vs sacrifices",');
+  lines.push('    "quality_tiers": [');
+  lines.push('      {"tier":"Budget",  "fill_pct":20,  "note":"what you get and what breaks first"},');
+  lines.push('      {"tier":"Mid",     "fill_pct":55,  "note":"sweet spot and what changes"},');
+  lines.push('      {"tier":"Premium", "fill_pct":80,  "note":"what premium actually buys"},');
+  lines.push('      {"tier":"Pro",     "fill_pct":100, "note":"when it genuinely matters"}');
+  lines.push('    ]');
+  lines.push('  },');
+  lines.push('  "alternatives": [');
+  lines.push('    {');
+  lines.push('      "name": "alternative item name",');
+  lines.push('      "why_better": "specific reason better for health, function, sustainability, or user alignment",');
+  lines.push('      "tradeoff": "what you give up vs the original",');
+  lines.push('      "tags": ["tag1","tag2"]');
+  lines.push('    }');
+  lines.push('  ]');
+  lines.push('}');
+  return lines.join('\n');
+}
+
+// ── RENDER
+function renderResults(item, model, ctx, d){
+  var c   = d.costs || {};
+  var oh  = c.overhead || {};
+  var rec = d.ownership_recommendation || {};
+  var arch= d.design_archaeology || {};
+
+  // -- HEADER
+  var metaParts = [];
+  if(model) metaParts.push('Model: ' + model);
+  if(ctx)   metaParts.push('Context: ' + ctx);
+  if(d.category) metaParts.push(d.category);
+
+  var H = '<div class="r-hdr">' +
+    '<div>' +
+      '<div class="r-name">' + esc(d.item||item) + '</div>' +
+      (metaParts.length ? '<div class="r-meta">' + esc(metaParts.join('  ·  ')) + '</div>' : '') +
+    '</div>' +
+    '<div class="r-verdict">' + esc(d.verdict||'') + '</div>' +
+  '</div>';
+
+  // -- EXPORT BAR
+  var EXP = '<div class="export-bar">' +
+    '<span class="exp-lbl">Export:</span>' +
+    '<button class="exp-btn" id="btn-md">&#x2193; Markdown</button>' +
+    '<button class="exp-btn" id="btn-json">&#x2193; JSON</button>' +
+    '<button class="exp-btn" id="btn-copy">&#x2398; Copy MD</button>' +
+    '<button class="exp-btn" id="btn-share">&#x2934; Share URL</button>' +
+  '</div>';
+
+  // -- COST MATRIX
+  function cc(label, val, sub, cls){
+    return '<div class="cc' + (cls?' '+cls:'') + '">' +
+      '<div class="cc-lbl">' + label + '</div>' +
+      '<div class="cc-val">' + esc(val||'—') + '</div>' +
+      '<div class="cc-sub">' + esc(sub||'') + '</div>' +
+    '</div>';
+  }
+
+  var ohTags = Object.keys(OH_LABELS).map(function(k){
+    var v = ((oh[k]||'?').trim().toUpperCase().charAt(0));
+    var cls = v==='H'?'oh-H':v==='M'?'oh-M':'oh-L';
+    return '<span class="oh-tag ' + cls + '">' + OH_LABELS[k] + ': ' + v + '</span>';
+  }).join('');
+
+  var COST = '<div class="cost-matrix">' +
+    '<div class="eyebrow">COST &amp; OVERHEAD MATRIX</div>' +
+    '<div class="cost-grid">' +
+      cc('Acquisition Price',  c.acquisition_price,      'Sticker / unit cost') +
+      cc('Acquisition Extras', c.acquisition_extras,     'Tax, fees, delivery, install') +
+      cc('Ongoing / Year ($)', c.ongoing_annual_money,   'All recurring costs', 'hl') +
+      cc('Time / Year (hrs)',  c.time_annual_hours,      'Total annual attention') +
+      cc('Time / Use (min)',   c.time_per_use_minutes,   'Setup + use + teardown') +
+      cc('Effort / Use',       c.effort_level,           'L · M · H') +
+      cc('Space (sq ft)',      c.space_sqft,             c.space_note||'Storage / use footprint') +
+      cc('Expected Lifetime',  c.lifetime_years,         'Normal use conditions') +
+      cc('Total Lifetime Cost',c.lifetime_total_cost,    'All-in over full life', 'danger') +
+      cc('Resale Value',       c.resale_value,           '% of purchase at EOL') +
+    '</div>' +
+    '<div class="oh-row"><span class="oh-lbl">Overhead:</span>' + ohTags + '</div>' +
+  '</div>';
+
+  // -- OWNERSHIP REC
+  var recMode  = (rec.recommended_mode||'buy').toLowerCase();
+  var recColor = MODE_COLORS[recMode] || '#c8973a';
+
+  var recOpts = (rec.options||[]).filter(function(o){ return o.viable !== false; }).map(function(o){
+    var mc = MODE_COLORS[o.mode] || '#888';
+    return '<div class="rec-opt' + (o.mode===recMode?' best':'') + '">' +
+      '<div class="rec-opt-mode" style="color:' + mc + '">' + esc((o.mode||'').toUpperCase()) + '</div>' +
+      '<div class="rec-opt-when">' + esc(o.when||'') + '</div>' +
+    '</div>';
+  }).join('');
+
+  var REC = '<div class="own-rec">' +
+    '<div class="rec-primary">' +
+      '<div class="rec-word" style="color:' + recColor + '">' + esc(recMode.toUpperCase()) + '</div>' +
+      '<div class="rec-lbl">Recommended Mode</div>' +
+    '</div>' +
+    '<div class="rec-opts">' + recOpts + '</div>' +
+    '<div class="rec-reason">' + esc(rec.reasoning||'') + '</div>' +
+  '</div>';
+
+  // -- PHASES
+  var phaseCards = PHASES.map(function(p, i){
+    var items = (d.phases && d.phases[p.key]) || [];
+    if(!items.length) return '';
+    var lis = items.map(function(it){
+      var txt  = it.text || it;
+      var crit = it.critical === true;
+      return '<li class="pi' + (crit?' crit':'') + '">' + esc(txt) +
+        (crit ? '<span class="cbadge">CRITICAL</span>' : '') + '</li>';
+    }).join('');
+    return '<div class="phase-card ' + p.cls + '" style="animation-delay:' + (i*0.045) + 's">' +
+      '<div class="phase-num">' + p.num + ' / ' + p.key.toUpperCase() + '</div>' +
+      '<div class="phase-title">' + p.label + '</div>' +
+      '<ul class="phase-items">' + lis + '</ul>' +
+    '</div>';
+  }).join('');
+
+  var PH = '<div class="phases-section">' +
+    '<div class="phases-eyebrow">LIFECYCLE OBLIGATIONS — BY PHASE</div>' +
+    '<div class="phases-grid">' + phaseCards + '</div>' +
+  '</div>';
+
+  // -- NEGATIVE EFFECTS
+  var negSecs = [
+    {key:'physical',label:'Physical &amp; Health'},
+    {key:'financial',label:'Financial Erosion'},
+    {key:'relational_social',label:'Relational &amp; Social'},
+    {key:'environmental',label:'Environmental'}
+  ];
+  var negBlocks = negSecs.map(function(s){
+    var items = ((d.negative_effects||{})[s.key])||[];
+    if(!items.length) return '';
+    var lis = items.map(function(it){
+      var txt=it.text||it, crit=it.critical===true;
+      return '<li class="ni' + (crit?' crit':'') + '">' + esc(txt) +
+        (crit?'<span class="cbadge">CRITICAL</span>':'') + '</li>';
+    }).join('');
+    return '<div><div class="neg-title">' + s.label + '</div><ul class="neg-list">' + lis + '</ul></div>';
+  }).join('');
+
+  var NEG = '<div class="neg-section">' +
+    '<div class="eyebrow">NEGATIVE EFFECTS — WHAT IT DOES TO YOU &amp; THE WORLD</div>' +
+    '<div class="neg-grid">' + negBlocks + '</div>' +
+  '</div>';
+
+  // -- ARCHAEOLOGY
+  var evoHTML = (arch.evolution||[]).map(function(e){
+    return '<div class="evo-row">' +
+      '<div class="evo-dot ' + (e.dot||'present') + '"></div>' +
+      '<div class="evo-inner"><span class="evo-era">' + esc(e.era||'') + '</span><br>' + esc(e.description||'') + '</div>' +
+    '</div>';
+  }).join('');
+
+  var qHTML = (arch.quality_tiers||[]).map(function(t){
+    var pct = t.fill_pct || 50;
+    var col = pct>=75 ? 'var(--green)' : pct>=45 ? 'var(--accent)' : 'var(--muted)';
+    return '<div class="qtier">' +
+      '<div class="qt-name">' + esc(t.tier||'') + '</div>' +
+      '<div class="qt-bar"><div class="qt-fill" style="width:' + pct + '%;background:' + col + '"></div></div>' +
+      '<div class="qt-note">' + esc(t.note||'') + '</div>' +
+    '</div>';
+  }).join('');
+
+  var ARCH = '<div class="arch-section">' +
+    '<div class="eyebrow">DESIGN ARCHAEOLOGY</div>' +
+    '<div class="arch-grid">' +
+      '<div class="arch-card">' +
+        '<div class="arch-title">ORIGIN &amp; EVOLUTION</div>' +
+        '<div class="arch-body">' + esc(arch.origin||'') + '</div>' +
+        '<div class="evo-chain">' + evoHTML + '</div>' +
+      '</div>' +
+      '<div class="arch-card">' +
+        '<div class="arch-title">GENERATIONAL TRADE-OFFS</div>' +
+        '<div class="arch-body">' + esc(arch.tradeoffs||'') + '</div>' +
+      '</div>' +
+      '<div class="arch-card">' +
+        '<div class="arch-title">QUALITY HIERARCHY</div>' +
+        '<div class="qtiers">' + qHTML + '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  // -- ALTERNATIVES (stored in JS array; buttons use data-index)
+  var altsData = d.alternatives || [];
+  var altCards = altsData.map(function(a, i){
+    var tags = (a.tags||[]).map(function(t){ return '<span class="alt-tag">' + esc(t) + '</span>'; }).join('');
+    return '<div class="alt-card" style="animation-delay:' + (i*0.06) + 's">' +
+      '<div class="alt-rank">ALTERNATIVE ' + (i+1) + '</div>' +
+      '<div class="alt-name">' + esc(a.name||'') + '</div>' +
+      '<div class="alt-why">'  + esc(a.why_better||'') + '</div>' +
+      (a.tradeoff ? '<div class="alt-trade">Trade-off: ' + esc(a.tradeoff) + '</div>' : '') +
+      '<div class="alt-tags">' + tags + '</div>' +
+      '<button class="alt-btn" data-index="' + i + '">&#x2192; ANALYZE THIS</button>' +
+    '</div>';
+  }).join('');
+
+  var ALTS = '<div class="alt-section">' +
+    '<div class="eyebrow">BETTER ALTERNATIVES — HEALTH · FUNCTION · SUSTAINABILITY · ALIGNMENT</div>' +
+    '<div class="alt-grid">' + altCards + '</div>' +
+  '</div>';
+
+  resultsEl.innerHTML = H + EXP + COST + REC + PH + NEG + ARCH + ALTS;
+  resultsEl.classList.add('on');
+  resultsEl.scrollIntoView({behavior:'smooth'});
+
+  // -- BIND EXPORT BUTTONS (after innerHTML set)
+  document.getElementById('btn-md').addEventListener('click', exportMD);
+  document.getElementById('btn-json').addEventListener('click', exportJSON);
+  document.getElementById('btn-copy').addEventListener('click', function(){ copyMD(this); });
+  document.getElementById('btn-share').addEventListener('click', function(){ shareLink(this); });
+
+  // -- BIND ALT BUTTONS
+  resultsEl.querySelectorAll('.alt-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.dataset.index, 10);
+      var alt = altsData[idx];
+      if(alt && alt.name){
+        itemInput.value  = alt.name;
+        modelInput.value = '';
+        window.scrollTo({top:0, behavior:'smooth'});
+        analyze();
+      }
+    });
+  });
+}
+
+// ── EXPORT
+function toMD(){
+  var d = currentData; if(!d) return '';
+  var c = d.costs||{}, rec = d.ownership_recommendation||{}, arch = d.design_archaeology||{};
+  var md = '# ' + (d.item||'Item') + ' — True Cost of Ownership\n\n';
+  md += '> ' + (d.verdict||'') + '\n\n';
+  if(d.category) md += '**Category:** ' + d.category + '\n\n';
+
+  md += '## Cost & Overhead Matrix\n\n| Metric | Value |\n|---|---|\n';
+  [['Acquisition Price',c.acquisition_price],['Acquisition Extras',c.acquisition_extras],
+   ['Ongoing / Year ($)',c.ongoing_annual_money],['Time / Year (hrs)',c.time_annual_hours],
+   ['Time / Use (min)',c.time_per_use_minutes],['Effort Level',c.effort_level],
+   ['Space (sq ft)',c.space_sqft],['Expected Lifetime',c.lifetime_years],
+   ['Total Lifetime Cost',c.lifetime_total_cost],['Resale Value',c.resale_value]
+  ].forEach(function(r){ if(r[1]) md += '| ' + r[0] + ' | ' + r[1] + ' |\n'; });
+  md += '\n**Overhead:**\n';
+  Object.keys(c.overhead||{}).forEach(function(k){ md += '- ' + k + ': **' + (c.overhead[k]||'') + '**\n'; });
+  md += '\n';
+
+  md += '## Ownership Recommendation\n\n**&#8594; ' + (rec.recommended_mode||'').toUpperCase() + '**\n\n' + (rec.reasoning||'') + '\n\n';
+  (rec.options||[]).filter(function(o){ return o.viable!==false; }).forEach(function(o){
+    md += '- **' + (o.mode||'').toUpperCase() + '**: ' + (o.when||'') + '\n';
+  });
+  md += '\n';
+
+  var PH_LABELS = {pre:'Pre-Acquisition',acquire:'Acquisition',first:'First Use / Setup',
+    regular:'Regular Maintenance',light:'Underuse / Dormancy',heavy:'Heavy / Aggressive Use',
+    special:'Special Conditions',dispose:'Disposal / Exit',aftermath:'Aftermath'};
+  md += '## Lifecycle Phases\n\n';
+  Object.keys(PH_LABELS).forEach(function(k){
+    var items = (d.phases&&d.phases[k])||[]; if(!items.length) return;
+    md += '### ' + PH_LABELS[k] + '\n';
+    items.forEach(function(it){ md += '- ' + (it.text||it) + (it.critical?' ⚠️ **CRITICAL**':'') + '\n'; });
+    md += '\n';
+  });
+
+  md += '## Negative Effects\n\n';
+  [{key:'physical',label:'Physical & Health'},{key:'financial',label:'Financial Erosion'},
+   {key:'relational_social',label:'Relational & Social'},{key:'environmental',label:'Environmental'}
+  ].forEach(function(s){
+    var items = ((d.negative_effects||{})[s.key])||[]; if(!items.length) return;
+    md += '### ' + s.label + '\n';
+    items.forEach(function(it){ md += '- ' + (it.text||it) + (it.critical?' ⚠️ **CRITICAL**':'') + '\n'; });
+    md += '\n';
+  });
+
+  md += '## Design Archaeology\n\n';
+  md += '**Origin:** ' + (arch.origin||'') + '\n\n';
+  md += '**Trade-offs:** ' + (arch.tradeoffs||'') + '\n\n';
+  if((arch.evolution||[]).length){
+    md += '**Evolution:**\n';
+    arch.evolution.forEach(function(e){ md += '- **' + (e.era||'') + '**: ' + (e.description||'') + '\n'; });
+    md += '\n';
+  }
+  if((arch.quality_tiers||[]).length){
+    md += '**Quality Tiers:**\n';
+    arch.quality_tiers.forEach(function(t){ md += '- **' + (t.tier||'') + '**: ' + (t.note||'') + '\n'; });
+    md += '\n';
+  }
+
+  md += '## Better Alternatives\n\n';
+  (d.alternatives||[]).forEach(function(a,i){
+    md += '### ' + (i+1) + '. ' + (a.name||'') + '\n';
+    md += '**Why better:** ' + (a.why_better||'') + '\n';
+    if(a.tradeoff) md += '**Trade-off:** ' + a.tradeoff + '\n';
+    if(a.tags&&a.tags.length) md += '**Tags:** ' + a.tags.join(', ') + '\n';
+    md += '\n';
+  });
+  md += '---\n*Generated by OWNED — True Cost of Ownership Engine*\n';
+  return md;
+}
+
+function exportMD(){
+  var md = toMD(); if(!md) return;
+  dlFile(safeName() + '_ownership.md', md, 'text/markdown');
+}
+function exportJSON(){
+  if(!currentData) return;
+  dlFile(safeName() + '_ownership.json', JSON.stringify(currentData,null,2), 'application/json');
+}
+function copyMD(btn){
+  var md = toMD(); if(!md) return;
+  navigator.clipboard.writeText(md).then(function(){
+    var orig = btn.textContent; btn.textContent = '&#x2713; Copied';
+    setTimeout(function(){ btn.textContent = orig; }, 1800);
+  });
+}
+function shareLink(btn){
+  var p = new URLSearchParams();
+  var q = itemInput.value.trim(), m = modelInput.value.trim(), c = ctxInput.value.trim();
+  if(q) p.set('q',q); if(m) p.set('m',m); if(c) p.set('c',c);
+  var url = window.location.href.split('?')[0] + '?' + p.toString();
+  navigator.clipboard.writeText(url).then(function(){
+    var orig = btn.textContent; btn.textContent = '&#x2713; URL Copied';
+    setTimeout(function(){ btn.textContent = orig; }, 1800);
+  });
+}
+function dlFile(name, content, type){
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type:type}));
+  a.download = name; a.click();
+}
+function safeName(){
+  return ((currentData&&currentData.item)||'item').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+}
+
+function showError(msg){
+  resultsEl.innerHTML = '<div style="padding:2rem 3rem;font-size:0.73rem;color:var(--red)">' +
+    'ERROR: ' + esc(msg) + '<br><br>' +
+    '<small style="color:var(--muted)">Try simplifying the item name, or check your network connection.</small>' +
+  '</div>';
+  resultsEl.classList.add('on');
+}
+
+function esc(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── URL PARAM AUTO-LOAD
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var q=p.get('q'), m=p.get('m'), c=p.get('c');
+  if(q){
+    itemInput.value  = q;
+    if(m) modelInput.value = m;
+    if(c) ctxInput.value   = c;
+    analyze();
+  }
+})();
+
+})();
+</script>
+</body>
+</html>
