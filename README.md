@@ -4,6 +4,11 @@ Created by Ben Kaiser (Kaiser\_Design) in Claude Sonnet 4.5 as an artifact to as
 
 ---- ---- ---- ----
 
+Use it here (github pages): https://kaiserdesign.github.io/owned-app/
+or here (Netlify): https://owned-product-app.netlify.app/
+
+---- ---- ---- ----
+
 
 
 Original idea based on:
