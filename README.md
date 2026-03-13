@@ -4,10 +4,12 @@ Created by Ben Kaiser (Kaiser\_Design) in Claude Sonnet 4.5 as an artifact to as
 
 ---- ---- ---- ----
 
-Use it here (github pages): https://kaiserdesign.github.io/owned-app/
+Best user experience -- Claude artifact: https://claude.ai/public/artifacts/c1a8b3b2-7aee-4129-a612-22debae616de
+
+Or use it here (github pages): https://kaiserdesign.github.io/owned-app/
 or here (Netlify): https://owned-product-app.netlify.app/
-or as Claude artifact: https://claude.ai/public/artifacts/c1a8b3b2-7aee-4129-a612-22debae616de 
-also, this experiment with Opal (very different results): https://opal.google/app/1ksv9D2qkVd80ZypvnZRZWZX6UJHZXJcy
+or here (Cloudflare): https://owned-app.bhk468.workers.dev/
+or also, this experiment with Opal (very different results): https://opal.google/app/1ksv9D2qkVd80ZypvnZRZWZX6UJHZXJcy
 
 ---- ---- ---- ----
 
