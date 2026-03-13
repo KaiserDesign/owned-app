@@ -81,19 +81,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font
 .pm-cancel:hover{border-color:var(--red);color:var(--red);}
 .pm-err{font-size:0.61rem;color:var(--red);margin-top:0.35rem;min-height:1em;}
 
-/* ── COPY EXPORT MODAL ── */
-#copyExportModal{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:1.5rem;}
-#copyExportModal.vis{display:flex;}
-.ce-box{background:var(--surface);border:1px solid var(--border);padding:1.8rem 2rem;max-width:600px;width:100%;max-height:85vh;display:flex;flex-direction:column;gap:0.8rem;}
-.ce-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.1em;color:var(--accent);}
-.ce-note{font-size:0.62rem;color:var(--text2);line-height:1.7;}
-.ce-content{background:var(--bg);border:1px solid var(--border);padding:0.75rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text2);overflow-y:auto;flex:1;min-height:160px;max-height:340px;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
-.ce-footer{display:flex;gap:0.6rem;}
-.ce-copy{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:0.5rem 1.3rem;background:var(--accent);color:#0c0c0a;border:none;cursor:pointer;}
-.ce-copy:hover{background:#d9a840;}
-.ce-close{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:0.5rem 1rem;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;}
-.ce-close:hover{border-color:var(--red);color:var(--red);}
-
 /* ── HEADER ── */
 header{padding:1.7rem 3rem 1.3rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;}
 .hdr-left{display:flex;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;}
@@ -127,8 +114,6 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
 .btn-stop{background:var(--red);color:#fff;display:none;}
 .btn-stop:hover{background:#c83a3a;}
 .btn-stop.vis{display:inline-block;}
-.btn-load{background:transparent;border:1px solid var(--accent);color:var(--accent);font-size:0.75rem;padding:0.45rem 1rem;letter-spacing:0.09em;}
-.btn-load:hover{background:var(--adim);}
 .chips{display:flex;gap:0.3rem;flex-wrap:wrap;align-items:center;margin-top:0.58rem;}
 .chips-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-right:0.1rem;}
 .chip{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.62rem;padding:0.16rem 0.5rem;cursor:pointer;transition:all 0.12s;letter-spacing:0.04em;}
@@ -254,28 +239,9 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
 .alt-tag{font-size:0.53rem;padding:0.12rem 0.44rem;border:1px solid rgba(78,154,110,0.35);color:#5aaa7e;background:rgba(78,154,110,0.06);letter-spacing:0.05em;}
 .alt-btn{margin-top:auto;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:0.59rem;padding:0.32rem 0.65rem;cursor:pointer;letter-spacing:0.07em;transition:all 0.12s;text-align:left;width:fit-content;}
 .alt-btn:hover{border-color:var(--accent);color:var(--accent);}
-/* ── GLOBAL WRAP FIX ── */
-*{overflow-wrap:break-word;word-break:break-word;}
-/* restore nowrap only where explicitly needed */
-.btn,.hdr-key-btn,.rec-mode,.exp-btn,.loader-word{word-break:normal;overflow-wrap:normal;white-space:nowrap;}
-
 @media(max-width:760px){
   header,.input-section,.r-hdr,.export-bar,.cost-matrix,.own-rec,.phases-eyebrow,.neg-section,.arch-section,.alt-section{padding-left:1rem;padding-right:1rem;}
   .sub-grid,.neg-grid,.arch-grid,.ks-modes{grid-template-columns:1fr;}
-  /* prevent any grid cell from overflowing */
-  .cost-grid{grid-template-columns:1fr 1fr;}
-  .cc-val{font-size:0.85rem;word-break:break-all;}
-  .scope-grid{grid-template-columns:1fr;}
-  .sol-grid{grid-template-columns:1fr;}
-  .r-hdr{flex-direction:column;gap:0.8rem;}
-  .r-verdict{max-width:100%;font-size:0.88rem;}
-  .r-name{font-size:1.8rem;}
-  .phase-grid,.phases-grid{grid-template-columns:1fr;}
-  .export-bar{flex-wrap:wrap;gap:0.3rem;padding:0.5rem 1rem;}
-  .btn-row{flex-wrap:wrap;}
-  /* sections that use 3rem padding */
-  .scope-section,.solutions-section,.alt-section,.arch-section,
-  .cost-matrix,.own-rec,.phases-section,.neg-section{padding-left:1rem;padding-right:1rem;}
 }
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
@@ -326,7 +292,9 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
   @page{margin:1.5cm;}
 }
 
-
+@media(max-width:760px){
+  .scope-grid,.sol-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -394,7 +362,7 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
         <input class="ks-inp" type="password" id="geminiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
         <div class="ks-hint">
           Get a key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.
-          Uses gemini-1.5-flash (stable free tier). Free tier has daily limits and is unavailable in EU/UK/CH. If you hit a 429, you've exhausted the daily quota — switch to Claude.ai mode or try tomorrow.
+          Free tier has daily limits (~250 req/day) and is unavailable in EU/UK/CH. If you hit a 429 error, you've exceeded your daily quota — try again tomorrow or use Anthropic/Claude.ai mode instead.
         </div>
       </div>
     </div>
@@ -412,10 +380,10 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
   <div class="pm-box">
     <div class="pm-title">CLAUDE.AI MODE</div>
     <div class="pm-steps">
-      <strong>Step 1:</strong> Copy the prompt below &amp; click "Open Claude.ai".<br>
-      <strong>Step 2:</strong> Paste the prompt into Claude and send it.<br>
-      <strong>Step 3:</strong> When Claude finishes, click the <strong>copy icon</strong> on its response (top-right of the message).<br>
-      <strong>Step 4:</strong> Paste everything here — code fences and all — and click Render.
+      <strong>Step 1:</strong> Copy the prompt below.<br>
+      <strong>Step 2:</strong> Click "Open Claude.ai" &mdash; paste it in and send.<br>
+      <strong>Step 3:</strong> Copy Claude's full response (the JSON block).<br>
+      <strong>Step 4:</strong> Paste it below and click "RENDER RESULTS".
     </div>
     <div class="pm-prompt" id="pmPromptText"></div>
     <div class="pm-row">
@@ -430,19 +398,6 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
     <div class="pm-footer">
       <button class="pm-submit" id="pmSubmit">RENDER RESULTS</button>
       <button class="pm-cancel" id="pmCancel">CANCEL</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── COPY EXPORT MODAL (artifact-safe) ── -->
-<div id="copyExportModal">
-  <div class="ce-box">
-    <div class="ce-title" id="ceTitle">EXPORT</div>
-    <div class="ce-note" id="ceNote">Copy the content below.</div>
-    <div class="ce-content" id="ceContent"></div>
-    <div class="ce-footer">
-      <button class="ce-copy" id="ceCopyBtn">COPY</button>
-      <button class="ce-close" id="ceCloseBtn">CLOSE</button>
     </div>
   </div>
 </div>
@@ -478,7 +433,6 @@ input::placeholder,textarea::placeholder{color:var(--muted);}
   <div class="btn-row">
     <button class="btn btn-go" id="analyzeBtn">ANALYZE</button>
     <button class="btn btn-stop" id="stopBtn">&#9632; STOP</button>
-    <button class="btn btn-load" id="loadBtn">&#x2913; LOAD JSON</button>
   </div>
   <div class="chips">
     <span class="chips-lbl">Try:</span>
@@ -536,7 +490,6 @@ var modelInput   = document.getElementById('modelInput');
 var ctxInput     = document.getElementById('ctxInput');
 var analyzeBtn   = document.getElementById('analyzeBtn');
 var stopBtn      = document.getElementById('stopBtn');
-var loadBtn      = document.getElementById('loadBtn');
 var loadingEl    = document.getElementById('loadingState');
 var resultsEl    = document.getElementById('results');
 var welcomeEl    = document.getElementById('welcomeState');
@@ -551,12 +504,6 @@ var pmSubmit     = document.getElementById('pmSubmit');
 var pmCancel     = document.getElementById('pmCancel');
 var corsWarn     = document.getElementById('corsWarning');
 var corsWarnG    = document.getElementById('corsWarningGemini');
-var copyExportModal = document.getElementById('copyExportModal');
-var ceTitle      = document.getElementById('ceTitle');
-var ceNote       = document.getElementById('ceNote');
-var ceContent    = document.getElementById('ceContent');
-var ceCopyBtn    = document.getElementById('ceCopyBtn');
-var ceCloseBtn   = document.getElementById('ceCloseBtn');
 
 // ── CONSTANTS
 var MODE_COLORS = {buy:'#c8973a',rent:'#4278a5',lease:'#7a5fa0',borrow:'#4e9a6e',subscribe:'#6a8a3a',avoid:'#b83232'};
@@ -679,7 +626,8 @@ function updateKeyIndicator(){
 
 // ── INIT
 (function init(){
-  // Artifact mode — API works natively, skip setup entirely
+  // If running as artifact inside claude.ai — API calls work without a key via the environment
+  // Skip setup entirely, default to anthropic mode
   if(isArtifact){
     activeMode = 'anthropic';
     storeSave(SK_MODE, 'anthropic');
@@ -689,39 +637,30 @@ function updateKeyIndicator(){
     return;
   }
 
-  // Always show setup on load — pre-select the saved mode so it's a one-click confirm
-  var savedMode = storeGet(SK_MODE) || 'anthropic';
-  activeMode = savedMode;
-  // Pre-select saved mode button
-  document.querySelectorAll('.ks-mode').forEach(function(el){
-    el.classList.toggle('sel', el.dataset.mode === savedMode);
-  });
-  var savedPanel = document.getElementById('panel-'+savedMode);
-  document.querySelectorAll('.ks-panel').forEach(function(p){ p.classList.remove('vis'); });
-  if(savedPanel) savedPanel.classList.add('vis');
-  updateCorsWarnings();
+  var savedMode = storeGet(SK_MODE);
+  if(savedMode){
+    activeMode = savedMode;
+    hideSetup();
+  } else {
+    updateCorsWarnings();
+  }
   updateKeyIndicator();
   updateWelcomeBody();
+  try{
+    var p=new URLSearchParams(window.location.search);
+    var q=p.get('q'),m=p.get('m'),c=p.get('c');
+    if(q && savedMode){
+      itemInput.value=q;
+      if(m) modelInput.value=m;
+      if(c) ctxInput.value=c;
+      analyze();
+    }
+  }catch(e){}
 })();
 
 // ── MAIN EVENTS
 analyzeBtn.addEventListener('click', analyze);
 stopBtn.addEventListener('click', function(){ cancelled=true; setLoading(false); });
-loadBtn.addEventListener('click', function(){
-  // Use last-run args if available, otherwise pull current input values
-  if(!pendingAnalysisArgs){
-    var it = itemInput.value.trim();
-    pendingAnalysisArgs = {item: it||'item', model: modelInput.value.trim(), ctx: ctxInput.value.trim()};
-  }
-  // Show modal in paste-only mode — skip regenerating the prompt if we already have one
-  if(!pmPromptText.textContent){
-    var it2 = pendingAnalysisArgs.item, mo2 = pendingAnalysisArgs.model, cx2 = pendingAnalysisArgs.ctx;
-    pmPromptText.textContent = buildPrompt(it2||'item', mo2||'', cx2||'');
-  }
-  pmPasteArea.value = '';
-  pmErr.textContent = '';
-  promptModal.classList.add('vis');
-});
 itemInput.addEventListener('keydown', function(e){ if(e.key==='Enter') analyze(); });
 document.querySelectorAll('.chip').forEach(function(chip){
   chip.addEventListener('click', function(){
@@ -782,7 +721,7 @@ function callAnthropic(key, prompt, item, model, ctx){
     body: JSON.stringify({
       model:'claude-sonnet-4-5',
       max_tokens:8000,
-      system:'You are a ruthlessly precise ownership analyst. Your response must be a single raw JSON object and nothing else. Do not use markdown. Do not use code fences. Do not write any text before or after the JSON. The first character of your response must be { and the last must be }.',
+      system:'You are a ruthlessly precise ownership analyst. Output ONLY valid compact JSON — no markdown, no preamble. critical:true only for commonly missed + serious consequence items.',
       messages:[{role:'user',content:prompt}]
     })
   })
@@ -817,12 +756,12 @@ function callAnthropic(key, prompt, item, model, ctx){
 
 // ── GEMINI CALL
 function callGemini(key, prompt, item, model, ctx){
-  var url='https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key='+key;
+  var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key;
   fetch(url,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      contents:[{parts:[{text:'You are a precise ownership analyst. Your response must be a single raw JSON object and nothing else. Do not use markdown. Do not use code fences. The first character must be { and the last must be }.\n\n'+prompt}]}],
+      contents:[{parts:[{text:'You are a precise ownership analyst. Output ONLY valid JSON — no markdown, no preamble.\n\n'+prompt}]}],
       generationConfig:{maxOutputTokens:8000,temperature:0.1}
     })
   })
@@ -879,13 +818,9 @@ pmOpenClaude.addEventListener('click', function(){
 
 pmSubmit.addEventListener('click', function(){
   var raw = pmPasteArea.value.trim();
-  if(!raw){ pmErr.textContent='Paste Claude\'s response first.'; return; }
+  if(!raw){ pmErr.textContent='Please paste Claude\'s response first.'; return; }
   var parsed = parseJSON(raw);
-  if(!parsed){
-    var preview = raw.slice(0,120).replace(/\n/g,' ');
-    pmErr.textContent='Could not read JSON. Make sure you copied the full response using the copy icon on Claude\'s message. Got: "'+preview+'"';
-    return;
-  }
+  if(!parsed){ pmErr.textContent='Could not read JSON. Make sure you copied the full response. Preview: '+raw.slice(0,120); return; }
   promptModal.classList.remove('vis');
   currentData = parsed;
   var args = pendingAnalysisArgs || {};
@@ -913,22 +848,24 @@ function setLoading(on){
 
 function parseJSON(text){
   if(!text) return null;
-  // Normalize — strip control characters that break JSON.parse in Safari/WebKit
-  var t = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
-  // Try 1: raw text is already valid JSON
-  try{ var r=JSON.parse(t.trim()); if(r&&typeof r==='object') return r; }catch(e){}
-  // Try 2: extract content inside first ```...``` fence (handles ```json or plain ```)
-  var fenceMatch = t.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);
-  if(fenceMatch){
-    try{ var r2=JSON.parse(fenceMatch[1].trim()); if(r2&&typeof r2==='object') return r2; }catch(e){}
+  try{
+    // Strip all flavors of markdown code fences (```json, ```JSON, ```, ~~~)
+    var clean = text
+      .replace(/^[\s\S]*?```(?:json|JSON)?\s*/,'')  // strip everything up to and including opening fence
+      .replace(/```[\s\S]*$/,'')                      // strip closing fence and anything after
+      .replace(/~~~[\s\S]*$/,'')
+      .trim();
+    // If no fence was found, work with original text
+    if(clean.length < 10) clean = text.trim();
+    // Extract outermost { ... }
+    var s = clean.indexOf('{');
+    var e = clean.lastIndexOf('}');
+    if(s !== -1 && e > s) clean = clean.slice(s, e+1);
+    return JSON.parse(clean);
+  }catch(err){
+    // Last resort: try parsing the raw text directly
+    try{ return JSON.parse(text.trim()); }catch(e2){ return null; }
   }
-  // Try 3: find outermost { } — handles any amount of preamble/postamble text
-  var s = t.indexOf('{');
-  var e = t.lastIndexOf('}');
-  if(s !== -1 && e > s){
-    try{ var r3=JSON.parse(t.slice(s,e+1)); if(r3&&typeof r3==='object') return r3; }catch(e2){}
-  }
-  return null;
 }
 
 // ── PROMPT BUILDER
@@ -938,29 +875,26 @@ function buildPrompt(item, model, ctx){
   if(model) L.push('Specific model/product: "'+model+'"');
   if(ctx)   L.push('Context: "'+ctx+'"');
   L.push('');
-  L.push('CRITICAL OUTPUT RULE: Your entire response must be ONE raw JSON object and nothing else.');
-  L.push('Do NOT use markdown. Do NOT use code fences (no ```). Do NOT write any explanation before or after.');
-  L.push('The very first character of your response must be { and the very last must be }.');
+  L.push('Output ONLY a single valid JSON object. No markdown. No code fences. No explanation. Start your response with { and end with }.');
   L.push('');
-  L.push('Fill every field with real, specific data for this item. No placeholder text.');
-  L.push('For all numeric fields, always include the unit in the string value.');
+  L.push('Required structure (fill all fields with real data for the specific item):');
   L.push('');
   L.push('{');
   L.push('  "item": "canonical name including model",');
   L.push('  "category": "product category",');
   L.push('  "verdict": "2-3 sentence unvarnished truth. Most overlooked burden in the last sentence.",');
   L.push('  "costs": {');
-  L.push('    "acquisition_price": "e.g. $300-$500 USD",');
-  L.push('    "acquisition_extras": "e.g. $40-$80 tax + $20 delivery",');
-  L.push('    "ongoing_annual_money": "e.g. ~$60/yr (belt replacement + lube)",');
-  L.push('    "time_annual_hours": "e.g. 8-12 hrs/yr",');
-  L.push('    "time_per_use_minutes": "e.g. 3-5 min (unfold + fold)",');
+  L.push('    "acquisition_price": "price range",');
+  L.push('    "acquisition_extras": "tax, delivery, install",');
+  L.push('    "ongoing_annual_money": "all annual recurring costs",');
+  L.push('    "time_annual_hours": "hours per year",');
+  L.push('    "time_per_use_minutes": "minutes per session incl setup",');
   L.push('    "effort_level": "L or M or H",');
-  L.push('    "space_sqft": "e.g. 10 sq ft stored / 20 sq ft in use",');
+  L.push('    "space_sqft": "sq ft or minimal",');
   L.push('    "space_note": "space cost implication",');
-  L.push('    "lifetime_years": "e.g. 3-6 years with regular use",');
-  L.push('    "lifetime_total_cost": "e.g. ~$700-$1,100 all-in",');
-  L.push('    "resale_value": "e.g. 20-35% of purchase price",');
+  L.push('    "lifetime_years": "expected lifespan",');
+  L.push('    "lifetime_total_cost": "all-in lifetime cost",');
+  L.push('    "resale_value": "% of original price at end of life",');
   L.push('    "overhead": {');
   L.push('      "physical": "H or M or L",');
   L.push('      "temporal": "H or M or L",');
@@ -1003,9 +937,9 @@ function buildPrompt(item, model, ctx){
   L.push('    {"for_effect": "environmental",     "items": [{"action": "mitigation",          "effort": "L or M or H", "impact": "impact"}]}');
   L.push('  ],');
   L.push('  "scope": {');
-  L.push('    "micro": {"lens": "Item-Level",            "insight": "performance, quirks, failure modes for this specific item", "fit_score": 75, "fit_label": "Good fit"},');
+  L.push('    "micro": {"lens": "Item-Level",           "insight": "performance, quirks, failure modes for this specific item", "fit_score": 75, "fit_label": "Good fit"},');
   L.push('    "meso":  {"lens": "Use-Case / Problem Fit","insight": "does this actually solve the stated problem? gaps and better-fit alternatives", "fit_score": 60, "fit_label": "Partial fit"},');
-  L.push('    "macro": {"lens": "Systemic / Societal",   "insight": "supply chain, environmental, cultural, or industry-level dynamics", "fit_score": 50, "fit_label": "Mixed"}');
+  L.push('    "macro": {"lens": "Systemic / Societal",  "insight": "supply chain, environmental, cultural, or industry-level dynamics", "fit_score": 50, "fit_label": "Mixed"}');
   L.push('  },');
   L.push('  "design_archaeology": {');
   L.push('    "origin": "why this category was invented",');
@@ -1027,7 +961,7 @@ function buildPrompt(item, model, ctx){
   L.push('  ]');
   L.push('}');
   L.push('');
-  L.push('Rules: 3-5 items per array. critical:true only when commonly missed AND consequence is severe. fit_score is integer 0-100. Include units in every numeric value string.');
+  L.push('Rules: 3-5 items per phase/effect/solutions array. critical:true only when commonly missed AND consequence is severe. fit_score is integer 0-100. All string values are real content, not placeholders.');
   return L.join('\n');
 }
 
@@ -1229,67 +1163,19 @@ function toMD(){
   md+='---\n*Generated by OWNED -- True Cost of Ownership Engine*\n';
   return md;
 }
-function showCopyExport(title, note, content){
-  ceTitle.textContent = title;
-  ceNote.textContent = note;
-  ceContent.textContent = content;
-  ceCopyBtn.textContent = 'COPY';
-  copyExportModal.classList.add('vis');
-}
-ceCopyBtn.addEventListener('click', function(){
-  navigator.clipboard.writeText(ceContent.textContent).then(function(){
-    ceCopyBtn.textContent = 'COPIED!';
-    setTimeout(function(){ ceCopyBtn.textContent = 'COPY'; }, 2000);
-  }).catch(function(){
-    // Fallback: select the text
-    var range = document.createRange();
-    range.selectNodeContents(ceContent);
-    var sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  });
-});
-ceCloseBtn.addEventListener('click', function(){ copyExportModal.classList.remove('vis'); });
-
-function exportMD(){
-  var md = toMD(); if(!md) return;
-  if(isArtifact){
-    showCopyExport('MARKDOWN EXPORT', 'Copy the markdown below — paste into any editor or notes app.', md);
-  } else {
-    dlFile(sn()+'_ownership.md', md, 'text/markdown');
-  }
-}
-function exportJSON(){
-  if(!currentData) return;
-  var json = JSON.stringify(currentData, null, 2);
-  if(isArtifact){
-    showCopyExport('JSON EXPORT', 'Copy the raw JSON below — save as a .json file or use in your own tools.', json);
-  } else {
-    dlFile(sn()+'_ownership.json', json, 'application/json');
-  }
-}
+function exportMD(){var md=toMD();if(!md)return;dlFile(sn()+'_ownership.md',md,'text/markdown');}
+function exportJSON(){if(!currentData)return;dlFile(sn()+'_ownership.json',JSON.stringify(currentData,null,2),'application/json');}
 function exportPDF(){
-  if(!currentData) return;
-  if(isArtifact){
-    showCopyExport('PDF / PRINT', 'PDF export requires opening this app in a browser tab (not inside claude.ai). Download the HTML file and open it directly in Chrome or Safari, then use File → Print → Save as PDF.', 'To save as PDF:\n1. Download the OWNED app HTML file\n2. Open it in Chrome or Safari\n3. Run your analysis again\n4. Click "↓ PDF" — or use File → Print → Save as PDF');
-    return;
-  }
-  var style = document.createElement('style');
-  style.id = 'print-override';
-  style.textContent = '@media screen{#keyScreen,#setupScreen,#promptModal,#copyExportModal,.hdr-key-btn,.btn-row,.chips,.export-bar,.btn-stop{display:none!important;}}';
+  var d=currentData; if(!d) return;
+  // Hide UI chrome, print, restore
+  var style=document.createElement('style');
+  style.id='print-override';
+  style.textContent='@media screen{#keyScreen,#setupScreen,#promptModal,.hdr-key-btn,.btn-row,.chips,.export-bar,.btn-stop{display:none!important;}}';
   document.head.appendChild(style);
   window.print();
-  setTimeout(function(){ var s = document.getElementById('print-override'); if(s) s.remove(); }, 1000);
+  setTimeout(function(){ var s=document.getElementById('print-override'); if(s) s.remove(); }, 1000);
 }
-function copyMD(btn){
-  var md = toMD(); if(!md) return;
-  navigator.clipboard.writeText(md).then(function(){
-    var o = btn.textContent; btn.textContent = 'Copied!';
-    setTimeout(function(){ btn.textContent = o; }, 1800);
-  }).catch(function(){
-    showCopyExport('COPY MARKDOWN', 'Clipboard blocked — copy the text below manually.', md);
-  });
-}
+function copyMD(btn){var md=toMD();if(!md)return;navigator.clipboard.writeText(md).then(function(){var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o;},1800);});}
 function dlFile(name,content,type){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:type}));a.download=name;a.click();}
 function sn(){return((currentData&&currentData.item)||'item').replace(/[^a-z0-9]/gi,'_').toLowerCase();}
 function showError(msg){
